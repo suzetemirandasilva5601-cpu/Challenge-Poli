@@ -1,7 +1,7 @@
-:HL["/Challenge-Poli/_next/static/chunks/3apnonp10emvt.css","style"]
+:HL["/Challenge-Poli/_next/static/chunks/33owy7v-7m9pa.css","style"]
 :HL["/Challenge-Poli/_next/static/media/6873f4f49904bdbd-s.p.2adce56gso3ku.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Challenge-Poli/_next/static/media/75cb990346c55dc4-s.p.40bho2kviej2o.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 3:[["children",{"s":"__PAGE__","h":160}]]
-2:[["children",{"s":"configuracoes","h":96,"c":"$Q3"}]]
-1:[["children",{"s":"(paciente)","h":96,"c":"$Q2"}]]
-0:{"b":"O0RWbTu5_vBfpy8sIyyoJ","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+2:[["children",{"s":"configuracoes","h":64,"c":"$Q3"}]]
+1:[["children",{"s":"(paciente)","h":32,"c":"$Q2"}]]
+0:{"b":"gVaKwWZ6eAtgTLiU8nrFS","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
