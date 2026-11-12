@@ -41,8 +41,8 @@ Os pares vieram das buscas da skill ui-ux-pro-max ("News Editorial" para título
 
 ## Componentes e layout
 
-- **Vidro** (`glass`): branco a 65% com desfoque e saturação do que está atrás. Usado nos cartões, no cabeçalho e na barra inferior. O fundo da página tem manchas de cor bem suaves (verde, argila, azul) para o vidro ter o que desfocar.
-- **Cartão** (`card`): vidro, raio de 22 px (`--radius-card`), **sem borda cinza**: um fio de luz branca no topo e sombra longa e macia (`shadow-glass`). Clicável: `card-link`, que sobe 2 px com `shadow-glass-hover`.
+- **Vidro** (`glass`): branco a 70% com desfoque, **só no que fica fixo por cima do conteúdo** (cabeçalho, barra inferior, avisos). Desfoque é caro no celular a cada quadro de rolagem. Cartões e botões usam `surface` (branco a 75%, sem desfoque). As manchas de cor do fundo ficam numa camada fixa própria (`body::before`), nunca em `background-attachment: fixed`.
+- **Cartão** (`card`): superfície translúcida, raio de 22 px (`--radius-card`), **sem borda cinza**: um fio de luz branca no topo e sombra longa e macia (`shadow-glass`). Clicável: `card-link`, que sobe 2 px com `shadow-glass-hover`.
 - **Área interna** (`well`): tom levemente mais escuro com sombra interna, raio de 16 px, para o "O que fazer" dos alertas e avisos secundários.
 - **Botões e etiquetas:** em pílula (`rounded-full`). Status de exame em pílula preenchida, sem contorno.
 - **Variação de peso:** a ficha médica tem capa verde em degradê; o convite "Tem consulta marcada?" é um bloco verde em degradê. Evite telas só de cartões brancos iguais.

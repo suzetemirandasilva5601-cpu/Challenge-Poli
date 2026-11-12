@@ -87,21 +87,30 @@ html {
 }
 
 body {
-  /*
-   * Fundo com manchas de cor bem suaves (verde da marca e argila): é o que o
-   * vidro dos cartões desfoca. Sem isso, vidro sobre cor lisa vira só branco.
-   */
-  background:
-    radial-gradient(60rem 40rem at 110% -10%, rgb(130 177 157 / 0.35), transparent 60%),
-    radial-gradient(50rem 36rem at -20% 30%, rgb(200 103 62 / 0.12), transparent 60%),
-    radial-gradient(50rem 40rem at 100% 90%, rgb(47 93 138 / 0.1), transparent 60%),
-    var(--color-paper);
-  background-attachment: fixed;
+  background: var(--color-paper);
   color: var(--color-ink-900);
   font-family: var(--font-sans), system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Manchas de cor suaves atrás de tudo (verde da marca, argila, azul).
+ * Ficam numa camada fixa própria: o navegador pinta uma vez e só move a
+ * página por cima. (background-attachment: fixed no body repintava a tela
+ * inteira a cada quadro de rolagem, o que pesava no celular.)
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 40rem at 110% -10%, rgb(130 177 157 / 0.35), transparent 60%),
+    radial-gradient(50rem 36rem at -20% 30%, rgb(200 103 62 / 0.12), transparent 60%),
+    radial-gradient(50rem 40rem at 100% 90%, rgb(47 93 138 / 0.1), transparent 60%);
 }
 
 /* Foco sempre visível para teclado */
@@ -162,13 +171,23 @@ summary,
 }
 
 /* Superfície de vidro: base dos cartões, do cabeçalho e da barra inferior */
+/*
+ * Vidro com desfoque: só para o que fica fixo por cima do conteúdo
+ * (cabeçalho, barra inferior, avisos). Desfoque custa caro no celular a cada
+ * quadro de rolagem, então não vai nos cartões.
+ */
 @utility glass {
-  @apply bg-white/65 backdrop-blur-xl backdrop-saturate-150;
+  @apply bg-white/70 backdrop-blur-md;
+}
+
+/* Superfície translúcida sem desfoque: cartões e botões, sobre o fundo suave */
+@utility surface {
+  @apply bg-white/75;
 }
 
 /* Cartão de vidro: translúcido, cantos suaves, fio de luz no topo e sombra macia */
 @utility card {
-  @apply glass rounded-[var(--radius-card)] p-4 shadow-glass;
+  @apply surface rounded-[var(--radius-card)] p-4 shadow-glass;
 }
 
 /* Cartão clicável: sobe um pouco ao passar o mouse */
@@ -188,10 +207,10 @@ summary,
   @apply btn bg-brand-600 text-white shadow-[0_6px_16px_-6px_rgb(31_94_76/0.6)] hover:bg-brand-700;
 }
 @utility btn-secondary {
-  @apply btn glass text-ink-800 shadow-glass hover:bg-white/85;
+  @apply btn surface text-ink-800 shadow-glass hover:bg-white/90;
 }
 @utility btn-danger {
-  @apply btn glass text-danger-700 shadow-glass hover:bg-danger-50/80;
+  @apply btn surface text-danger-700 shadow-glass hover:bg-danger-50/80;
 }
 
 @utility input {
