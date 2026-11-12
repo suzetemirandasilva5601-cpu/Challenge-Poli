@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ChevronRight } from "@/components/icons";
 import { SectionTitle, Skeleton } from "@/components/ui";
 import { ageFrom, formatDate } from "@/lib/dates";
 import { shareState } from "@/lib/share";
-import { exportData, resetDemo, updatePatient, updatePrefs, useDb } from "@/lib/store";
+import { updatePatient, updatePrefs, useDb } from "@/lib/store";
 import type { Db, HealthAlert, Patient } from "@/lib/types";
 
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -296,56 +295,34 @@ function Notifications({ db }: { db: Db }) {
 }
 
 function Privacy({ db }: { db: Db }) {
-  const router = useRouter();
   const active = db.shares.filter((s) => shareState(s) === "ativo").length;
-
-  function download() {
-    const url = URL.createObjectURL(exportData());
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `elo-saude-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
   return (
     <>
       <SectionTitle>Privacidade e dados</SectionTitle>
-      <div className="card divide-y divide-ink-900/[0.06] p-0">
-        <Link href="/compartilhar" className="flex min-h-14 items-center gap-3 px-4 py-3 transition-colors hover:bg-white/60">
-          <span className="flex-1">
-            <span className="block text-[15px] font-semibold text-ink-900">Médicos com acesso</span>
-            <span className="block text-sm text-ink-600">
-              {active ? `${active} ${active === 1 ? "acesso ativo" : "acessos ativos"}. Veja ou revogue.` : "Nenhum acesso ativo agora."}
-            </span>
-          </span>
-          <ChevronRight width={18} className="shrink-0 text-ink-400" />
-        </Link>
-        <button type="button" onClick={download} className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/60">
-          <span className="flex-1">
-            <span className="block text-[15px] font-semibold text-ink-900">Baixar meus dados</span>
-            <span className="block text-sm text-ink-600">Arquivo com todo o seu histórico (JSON).</span>
-          </span>
-          <ChevronRight width={18} className="shrink-0 text-ink-400" />
-        </button>
-        <button
-          type="button"
-          className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-danger-50/60"
-          onClick={async () => {
-            if (!confirm("Apagar todo o seu histórico deste aparelho? Isso não pode ser desfeito.")) return;
-            await resetDemo();
-            router.push("/");
-          }}
-        >
-          <span className="flex-1">
-            <span className="block text-[15px] font-semibold text-danger-700">Apagar meus dados</span>
-            <span className="block text-sm text-ink-600">Remove exames, acessos e conversa deste aparelho.</span>
-          </span>
-        </button>
+      {/* Cada item no seu cartão; apagar fica uma etapa adiante, em "Gerenciar meus dados" */}
+      <div className="space-y-3">
+        <LinkCard
+          href="/compartilhar"
+          title="Quem tem acesso"
+          text={active ? `${active} ${active === 1 ? "acesso ativo" : "acessos ativos"}. Veja ou revogue.` : "Nenhum acesso ativo agora."}
+        />
+        <LinkCard href="/configuracoes/dados" title="Gerenciar meus dados" text="Baixar uma cópia, apagar a conversa ou apagar seus dados." />
       </div>
       <p className="mt-2 text-xs leading-relaxed text-ink-500">
-        Seu histórico fica salvo neste aparelho. Os laudos enviados são lidos por IA (Gemini, do Google) só para extrair os resultados. Envie apenas exames seus ou de quem te autorizou.
+        Seu histórico fica salvo neste aparelho. Os laudos enviados são lidos por IA (Gemini, do Google) só para extrair os resultados.
       </p>
     </>
+  );
+}
+
+function LinkCard({ href, title, text }: { href: string; title: string; text: string }) {
+  return (
+    <Link href={href} className="card-link flex min-h-16 items-center gap-3">
+      <span className="flex-1">
+        <span className="block text-[15px] font-semibold text-ink-900">{title}</span>
+        <span className="block text-sm text-ink-600">{text}</span>
+      </span>
+      <ChevronRight width={18} className="shrink-0 text-ink-400" />
+    </Link>
   );
 }
