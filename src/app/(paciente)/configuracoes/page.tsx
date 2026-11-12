@@ -71,12 +71,6 @@ export default function ConfiguracoesPage() {
       <Notifications db={db} />
       <Privacy db={db} />
 
-      <SectionTitle>Usar como app no celular</SectionTitle>
-      <div className="card space-y-2 text-sm text-ink-700">
-        <p><strong>iPhone (Safari):</strong> toque em Compartilhar e depois em <em>Adicionar à Tela de Início</em>.</p>
-        <p><strong>Android (Chrome):</strong> toque no menu ⋮ e depois em <em>Instalar app</em> ou <em>Adicionar à tela inicial</em>.</p>
-      </div>
-
       <SectionTitle>Sobre</SectionTitle>
       <div className="card space-y-2 text-sm text-ink-600">
         <p>Elo Saúde organiza seu histórico e indica quando procurar atendimento. Os alertas não são diagnóstico.</p>
