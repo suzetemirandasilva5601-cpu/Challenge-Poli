@@ -1,17 +1,19 @@
 3:"$Sreact.fragment"
 4:"/Challenge-Poli/piloto/_next/static/chunks/3qfy96eoyh-ek.js"
-5:"/Challenge-Poli/piloto/_next/static/chunks/2gchjhheglvo1.js"
-6:"/Challenge-Poli/piloto/_next/static/chunks/3uagei1_27w6h.js"
+5:"/Challenge-Poli/piloto/_next/static/chunks/0hvyd46a7e74e.js"
+6:"/Challenge-Poli/piloto/_next/static/chunks/0q9b42pm2p-gv.js"
 7:I[39756,["$4","$5","$6"],"default"]
 8:I[37457,["$4","$5","$6"],"default"]
-d:I[47257,["$4","$5","$6"],"ClientPageRoot"]
-e:"/Challenge-Poli/piloto/_next/static/chunks/3s-7g1zeo7aci.js"
-f:"/Challenge-Poli/piloto/_next/static/chunks/2v93sly4n3wwu.js"
-10:"/Challenge-Poli/piloto/_next/static/chunks/1sqbih044cjqv.js"
-11:"/Challenge-Poli/piloto/_next/static/chunks/11vgkkephbc0z.js"
-12:"/Challenge-Poli/piloto/_next/static/chunks/24_5-o9idtfmp.js"
-13:"/Challenge-Poli/piloto/_next/static/chunks/03fvr-9cws3w0.js"
-14:I[14234,["$4","$5","$6","$e","$f","$10","$11","$12","$13"],"default"]
+d:"/Challenge-Poli/piloto/_next/static/chunks/0pywdmkf64fqn.js"
+e:"/Challenge-Poli/piloto/_next/static/chunks/3whn50rh4n8p6.js"
+f:"/Challenge-Poli/piloto/_next/static/chunks/33uoeizg8z45f.js"
+10:"/Challenge-Poli/piloto/_next/static/chunks/30idqighugawo.js"
+11:"/Challenge-Poli/piloto/_next/static/chunks/3z7uq2yb26taw.js"
+12:"/Challenge-Poli/piloto/_next/static/chunks/03fvr-9cws3w0.js"
+13:"/Challenge-Poli/piloto/_next/static/chunks/24_5-o9idtfmp.js"
+14:I[38286,["$4","$5","$6","$d","$e","$f","$10","$11","$12","$13"],"PageHeader"]
+15:I[97493,["$4","$5","$6","$d","$e","$f","$10","$11","$12","$13"],"SlidingTabs"]
+16:I[58387,["$4","$5","$6","$d","$e","$f","$10","$11","$12","$13"],"ShareForm"]
 17:I[97367,["$4","$5","$6"],"OutletBoundary"]
 18:"$Sreact.suspense"
 1b:"ViewportBoundary"
@@ -22,12 +24,10 @@ f:"/Challenge-Poli/piloto/_next/static/chunks/2v93sly4n3wwu.js"
 a:X
 a:C
 b:X
-c:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$3","c",{"children":[["$","$Ld",null,{"Component":"$14","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@15","$@16"]}}],[["$","script","script-0",{"src":"/Challenge-Poli/piloto/_next/static/chunks/1sqbih044cjqv.js","async":true}],["$","script","script-1",{"src":"/Challenge-Poli/piloto/_next/static/chunks/11vgkkephbc0z.js","async":true}],["$","script","script-2",{"src":"/Challenge-Poli/piloto/_next/static/chunks/24_5-o9idtfmp.js","async":true}],["$","script","script-3",{"src":"/Challenge-Poli/piloto/_next/static/chunks/03fvr-9cws3w0.js","async":true}]],["$","$L17",null,{"children":["$","$18",null,{"name":"Next.MetadataOutlet","children":"$@19"}]}]]}],"p":"$@1a","v":null,"s":"$b"}}]]
+c:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$3","c",{"children":[["$","div",null,{"children":[[["$","$L14",null,{"title":"Médico e hospital","children":"Um link para o médico ver exames, remédios e medições numa tela só. Você escolhe o quê e por quanto tempo."}],["$","div",null,{"className":"mb-6","children":["$","$L15",null,{"label":"Médico e hospital","memoryKey":"cuidado","active":"consulta","items":[{"key":"consulta","label":"Consulta","href":"/compartilhar"},{"key":"internacao","label":"Internação","href":"/internacao"},{"key":"acessos","label":"Acessos","href":"/acessos"}]}]}]],["$","$L16",null,{}]]}],[["$","script","script-0",{"src":"/Challenge-Poli/piloto/_next/static/chunks/3z7uq2yb26taw.js","async":true}],["$","script","script-1",{"src":"/Challenge-Poli/piloto/_next/static/chunks/03fvr-9cws3w0.js","async":true}],["$","script","script-2",{"src":"/Challenge-Poli/piloto/_next/static/chunks/24_5-o9idtfmp.js","async":true}]],["$","$L17",null,{"children":["$","$18",null,{"name":"Next.MetadataOutlet","children":"$@19"}]}]]}],"p":"$@1a","v":null,"s":"$b"}}]]
 2:[["children",{"s":"compartilhar","h":64,"d":{"r":["$","$3","c",{"children":[null,["$","$L7",null,{"parallelRouterKey":"children","template":["$","$L8",null,{}]}]]}],"p":"$@9","v":"$a","s":"$b"},"c":"$Qc"}]]
 1:[["children",{"s":"(paciente)","h":32,"c":"$Q2"}]]
-0:{"t":{"t":{"s":"","h":80,"c":"$Q1"},"h":{"r":["$","$3","h",{"children":[null,["$","$L1c",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1, viewport-fit=cover"}],["$","meta","2",{"name":"theme-color","content":"#ffffff"}]]}],["$","$L1e",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$18",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Elo Saúde · seus exames e medições num lugar só"}],["$","meta","1",{"name":"description","content":"Exames, consultas, remédios, vacinas e medições do relógio organizados para você e para o seu médico."}],["$","meta","2",{"name":"application-name","content":"Elo Saúde"}],["$","link","3",{"rel":"manifest","href":"/Challenge-Poli/piloto/manifest.webmanifest"}],["$","link","4",{"rel":"icon","href":"/Challenge-Poli/piloto/icon.png?icon.3_b-t59ua1eo0.png","sizes":"512x512","type":"image/png"}],["$","link","5",{"rel":"apple-touch-icon","href":"/Challenge-Poli/piloto/apple-icon.png?apple-icon.0mpj01lk815ft.png","sizes":"180x180","type":"image/png"}],["$","$L1f","6",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@20","v":null,"s":"$b"}},"a":"$@21","u":"$@22","b":"dNgfhKX8pwomX5rPn2mlr"}
-15:{}
-16:"$c:0:1:d:r:props:children:0:props:serverProvidedParams:params"
+0:{"t":{"t":{"s":"","h":80,"c":"$Q1"},"h":{"r":["$","$3","h",{"children":[null,["$","$L1c",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1, viewport-fit=cover"}],["$","meta","2",{"name":"theme-color","content":"#ffffff"}]]}],["$","$L1e",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$18",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Elo Saúde · seus exames e medições num lugar só"}],["$","meta","1",{"name":"description","content":"Exames, consultas, remédios, vacinas e medições do relógio organizados para você e para o seu médico."}],["$","meta","2",{"name":"application-name","content":"Elo Saúde"}],["$","link","3",{"rel":"manifest","href":"/Challenge-Poli/piloto/manifest.webmanifest"}],["$","link","4",{"rel":"icon","href":"/Challenge-Poli/piloto/icon.png?icon.3_b-t59ua1eo0.png","sizes":"512x512","type":"image/png"}],["$","link","5",{"rel":"apple-touch-icon","href":"/Challenge-Poli/piloto/apple-icon.png?apple-icon.0mpj01lk815ft.png","sizes":"180x180","type":"image/png"}],["$","$L1f","6",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@20","v":null,"s":"$b"}},"a":"$@21","u":"$@22","b":"wKkHUaGVAEgMDnyn710NX"}
 19:null
 22:true
 b:300

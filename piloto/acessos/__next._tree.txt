@@ -1,0 +1,6 @@
+:HL["/Challenge-Poli/piloto/_next/static/chunks/1wzlsbhh1voad.css","style"]
+:HL["/Challenge-Poli/piloto/_next/static/media/b8dfa3d21eb22018-s.p.3lxpqujs87tck.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+3:[["children",{"s":"__PAGE__","h":160}]]
+2:[["children",{"s":"acessos","h":64,"c":"$Q3"}]]
+1:[["children",{"s":"(paciente)","h":32,"c":"$Q2"}]]
+0:{"b":"wKkHUaGVAEgMDnyn710NX","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
