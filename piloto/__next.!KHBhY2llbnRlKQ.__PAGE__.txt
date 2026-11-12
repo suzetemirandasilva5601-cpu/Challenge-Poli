@@ -1,0 +1,27 @@
+3:"$Sreact.fragment"
+4:"/Challenge-Poli/piloto/_next/static/chunks/3qfy96eoyh-ek.js"
+5:"/Challenge-Poli/piloto/_next/static/chunks/2gchjhheglvo1.js"
+6:"/Challenge-Poli/piloto/_next/static/chunks/3uagei1_27w6h.js"
+7:"/Challenge-Poli/piloto/_next/static/chunks/3s-7g1zeo7aci.js"
+8:"/Challenge-Poli/piloto/_next/static/chunks/2v93sly4n3wwu.js"
+9:"/Challenge-Poli/piloto/_next/static/chunks/0fcsvotw5i0cb.js"
+a:"/Challenge-Poli/piloto/_next/static/chunks/3n9u-vl9xks8a.js"
+b:I[69814,["$4","$5","$6","$7","$8","$9","$a"],"HomeView"]
+c:I[97367,["$4","$5","$6"],"OutletBoundary"]
+d:"$Sreact.suspense"
+11:"ViewportBoundary"
+12:I[97367,["$4","$5","$6"],"$11"]
+13:"MetadataBoundary"
+14:I[97367,["$4","$5","$6"],"$13"]
+15:I[27201,["$4","$5","$6"],"IconMark"]
+10:X
+2:[["children",{"s":"__PAGE__","h":128,"d":{"r":["$","$3","c",{"children":[["$","$Lb",null,{}],[["$","script","script-0",{"src":"/Challenge-Poli/piloto/_next/static/chunks/0fcsvotw5i0cb.js","async":true}],["$","script","script-1",{"src":"/Challenge-Poli/piloto/_next/static/chunks/3n9u-vl9xks8a.js","async":true}]],["$","$Lc",null,{"children":["$","$d",null,{"name":"Next.MetadataOutlet","children":"$@e"}]}]]}],"p":"$@f","v":null,"s":"$10"}}]]
+1:[["children",{"s":"(paciente)","h":32,"c":"$Q2"}]]
+0:{"t":{"t":{"s":"","h":80,"c":"$Q1"},"h":{"r":["$","$3","h",{"children":[null,["$","$L12",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1, viewport-fit=cover"}],["$","meta","2",{"name":"theme-color","content":"#ffffff"}]]}],["$","$L14",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$d",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Elo Saúde · seus exames e medições num lugar só"}],["$","meta","1",{"name":"description","content":"Exames, consultas, remédios, vacinas e medições do relógio organizados para você e para o seu médico."}],["$","meta","2",{"name":"application-name","content":"Elo Saúde"}],["$","link","3",{"rel":"manifest","href":"/Challenge-Poli/piloto/manifest.webmanifest"}],["$","link","4",{"rel":"icon","href":"/Challenge-Poli/piloto/icon.png?icon.3_b-t59ua1eo0.png","sizes":"512x512","type":"image/png"}],["$","link","5",{"rel":"apple-touch-icon","href":"/Challenge-Poli/piloto/apple-icon.png?apple-icon.0mpj01lk815ft.png","sizes":"180x180","type":"image/png"}],["$","$L15","6",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@16","v":null,"s":"$10"}},"a":"$@17","u":"$@18","b":"dNgfhKX8pwomX5rPn2mlr"}
+e:null
+18:true
+10:300
+10:C
+17:0
+16:"$undefined"
+f:"$undefined"
