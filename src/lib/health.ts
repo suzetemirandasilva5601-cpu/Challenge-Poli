@@ -1,4 +1,5 @@
 import { analyteInfo } from "./analytes";
+import { ALERT_NEEDS, availableMetrics } from "./metrics";
 import { addDays, daysBetween, formatDate, todayISO } from "./dates";
 import type { Db, HealthAlert, LabResult, WearableDay } from "./types";
 
@@ -180,8 +181,12 @@ export function computeAlerts(db: Db, today = todayISO()): HealthAlert[] {
     });
   }
 
+  // Só vale o alerta cujo sinal vem de um aparelho conectado (exames não dependem de aparelho)
+  const have = availableMetrics(db.devices ?? []);
+  const kept = alerts.filter((a) => ALERT_NEEDS[a.kind].every((m) => have.has(m)));
+
   const sev = { procure_medico: 0, atencao: 1 } as const;
-  return alerts.sort((a, b) => sev[a.severity] - sev[b.severity]);
+  return kept.sort((a, b) => sev[a.severity] - sev[b.severity]);
 }
 
 export function wearableSnapshot(days: WearableDay[], today = todayISO()) {

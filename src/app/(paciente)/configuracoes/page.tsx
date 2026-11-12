@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ChevronRight } from "@/components/icons";
 import { SectionTitle, Skeleton } from "@/components/ui";
 import { ageFrom, formatDate } from "@/lib/dates";
+import { isConnected } from "@/lib/metrics";
 import { shareState } from "@/lib/share";
 import { updatePatient, updatePrefs, useDb } from "@/lib/store";
 import type { Db, HealthAlert, Patient } from "@/lib/types";
@@ -219,24 +220,15 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 function Devices({ db }: { db: Db }) {
+  const on = db.devices.filter(isConnected);
   return (
     <>
-      <SectionTitle>Aparelhos conectados</SectionTitle>
-      <ul className="card divide-y divide-ink-900/[0.06] p-0">
-        {db.devices.map((d) => (
-          <li key={d.id} className="flex items-start gap-3 px-4 py-3">
-            <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-brand-500" aria-hidden />
-            <div className="min-w-0">
-              <p className="text-[15px] font-semibold text-ink-900">{d.name}</p>
-              <p className="text-sm text-ink-600">{d.metrics.join(", ")}</p>
-              <p className="text-xs text-ink-500">Conectado desde {formatDate(d.connectedAt.slice(0, 10))}</p>
-            </div>
-          </li>
-        ))}
-        <li className="px-4 py-3 text-sm text-ink-500">
-          Em breve: conectar pelo Apple Saúde (iPhone) e pelo Health Connect (Android).
-        </li>
-      </ul>
+      <SectionTitle>Aparelhos e apps conectados</SectionTitle>
+      <LinkCard
+        href="/wearables#aparelhos"
+        title={on.length ? on.map((d) => d.name).join(", ") : "Nenhum aparelho conectado"}
+        text="Conecte ou desconecte relógios, anéis e medidores. Cada sinal aparece conforme o aparelho."
+      />
     </>
   );
 }

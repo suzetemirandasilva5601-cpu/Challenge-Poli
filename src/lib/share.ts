@@ -1,5 +1,6 @@
 import { computeAlerts } from "./health";
-import type { Db, DoctorSummary, Encounter, Medication, Patient, RecipientKind, Scope, Share, Vaccine, WearableDay } from "./types";
+import { deviceMetrics, isConnected, type MetricKey } from "./metrics";
+import type { Db, DoctorSummary, Encounter, Medication, Patient, RecipientKind, Scope, Share, Vaccine, WearableDay, WearableDevice } from "./types";
 
 export type ShareState = "ativo" | "expirado" | "revogado";
 
@@ -48,6 +49,8 @@ interface Snapshot {
   m: Omit<Medication, "id">[];
   vc: Omit<Vaccine, "id">[];
   w: { s: string | null; d: number[][] };
+  /** Aparelhos conectados (nome, tipo, métricas): definem quais sinais e alertas o médico vê. */
+  dv?: [name: string, kind: WearableDevice["kind"], provides: MetricKey[]][];
   sm?: DoctorSummary;
 }
 
@@ -78,6 +81,7 @@ function toSnapshot(share: Share, data: ScopedData, summary?: DoctorSummary): Sn
     e: data.encounters.map(strip),
     m: data.medications.map(strip),
     vc: data.vaccines.map(strip),
+    dv: data.devices.filter(isConnected).map((d) => [d.name, d.kind, deviceMetrics(d)]),
     w: { s: data.wearableDays[0]?.date ?? null, d: data.wearableDays.map((day) => W_FIELDS.map((f) => day[f])) },
     sm: summary,
   };
@@ -136,7 +140,7 @@ function fromSnapshot(s: Snapshot): { share: Share; data: ScopedData; summary?: 
       medications: s.m.map((m, i) => ({ id: `m${i}`, ...m })),
       vaccines: s.vc.map((v, i) => ({ id: `v${i}`, ...v })),
       wearableDays,
-      devices: [],
+      devices: (s.dv ?? []).map(([name, kind, provides], i) => ({ id: `dv${i}`, name, kind, provides, metrics: [], connectedAt: s.sh.ca })),
     },
     s.sh.sc,
   );

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { AlertIcon, CheckIcon, ChevronRight, ClipboardIcon, DropIcon, GaugeIcon, HeartIcon, MoonIcon } from "@/components/icons";
 import { AlertCard, Disclaimer, SectionLink, SectionTitle, Skeleton, StatusBadge } from "@/components/ui";
+import { availableMetrics, type MetricKey } from "@/lib/metrics";
 import type { HealthAlert, WearableDay } from "@/lib/types";
 import { ageFrom, formatDate } from "@/lib/dates";
 import { analyteSeries, computeAlerts, fmt, formatRef, wearableSnapshot } from "@/lib/health";
@@ -22,6 +23,7 @@ export function HomeView() {
   const spo2Low = w.spo2Min < 90;
   const week = [...db.wearableDays].sort((a, b) => a.date.localeCompare(b.date)).slice(-7);
   const series = (pick: (d: WearableDay) => number) => week.map(pick);
+  const have = availableMetrics(db.devices);
 
   return (
     <div>
@@ -73,10 +75,15 @@ export function HomeView() {
 
       <SectionTitle action={<SectionLink href="/wearables">Ver tudo</SectionLink>}>Últimos 7 dias</SectionTitle>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Vital icon={<HeartIcon />} label="Batimentos em repouso" value={`${w.restingHr}`} unit="bpm" note="média" series={series((d) => d.restingHr)} />
-        <Vital icon={<MoonIcon />} label="Sono" value={fmt(w.sleepHours)} unit="h/noite" note="média" series={series((d) => d.sleepHours)} />
-        <Vital icon={<DropIcon />} label="Saturação mínima" value={`${w.spo2Min}`} unit="%" note={spo2Low ? "abaixo de 90%" : "menor valor"} warn={spo2Low} series={series((d) => d.spo2Min)} />
-        <Vital icon={<GaugeIcon />} label="Pressão arterial" value={`${w.systolic}/${w.diastolic}`} unit="mmHg" note={bpHigh ? "acima de 130/80" : "média"} warn={bpHigh} series={series((d) => d.systolic)} />
+        {have.has("restingHr") && <Vital icon={<HeartIcon />} label="Batimentos em repouso" value={`${w.restingHr}`} unit="bpm" note="média" series={series((d) => d.restingHr)} />}
+        {have.has("sleep") && <Vital icon={<MoonIcon />} label="Sono" value={fmt(w.sleepHours)} unit="h/noite" note="média" series={series((d) => d.sleepHours)} />}
+        {have.has("spo2") && <Vital icon={<DropIcon />} label="Saturação mínima" value={`${w.spo2Min}`} unit="%" note={spo2Low ? "abaixo de 90%" : "menor valor"} warn={spo2Low} series={series((d) => d.spo2Min)} />}
+        {have.has("bp") && <Vital icon={<GaugeIcon />} label="Pressão arterial" value={`${w.systolic}/${w.diastolic}`} unit="mmHg" note={bpHigh ? "acima de 130/80" : "média"} warn={bpHigh} series={series((d) => d.systolic)} />}
+        {!["restingHr", "sleep", "spo2", "bp"].some((m) => have.has(m as MetricKey)) && (
+          <Link href="/wearables#aparelhos" className="card-link col-span-full text-[15px] text-ink-600">
+            Nenhum aparelho conectado. <span className="font-semibold text-brand-700">Conectar relógio ou medidor</span>
+          </Link>
+        )}
       </div>
 
       <SectionTitle action={<SectionLink href="/exames">Todos os exames</SectionLink>}>Exames alterados</SectionTitle>

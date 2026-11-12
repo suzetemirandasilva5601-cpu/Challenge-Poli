@@ -5,6 +5,7 @@ import { analyteInfo, resolveAnalyteKey } from "./analytes";
 import { resetChat } from "./chat";
 import { addDays, isValidISODate, todayISO } from "./dates";
 import { createSeedDb, extendWearablesToToday } from "./seed";
+import { DEVICE_CATALOG, type DeviceKind } from "./metrics";
 import { RECIPIENTS, SCOPES, type Db, type RecipientKind, type DoctorSummary, type ExtractionSource, type Scope } from "./types";
 
 /**
@@ -206,6 +207,31 @@ export function simulateIrregularRhythm() {
         d.restingHr += 4;
       }
     }
+  });
+}
+
+// ---------- aparelhos ----------
+
+/** Liga ou desliga um aparelho. Desconectado, seus sinais e alertas somem; os dados antigos ficam guardados. */
+export function setDeviceConnected(id: string, connected: boolean) {
+  update((db) => {
+    const d = db.devices.find((x) => x.id === id);
+    if (d) d.connected = connected;
+  });
+}
+
+/**
+ * Conecta um tipo de aparelho. Na versão nativa isto abre a permissão do
+ * Apple Saúde ou do Health Connect; aqui, reativa ou cria o aparelho.
+ */
+export function connectDevice(kind: DeviceKind) {
+  update((db) => {
+    const existing = db.devices.find((d) => d.kind === kind);
+    if (existing) {
+      existing.connected = true;
+      return;
+    }
+    db.devices.push({ id: `dev-${kind}-${Date.now()}`, name: DEVICE_CATALOG[kind].label, kind, metrics: [], connectedAt: new Date().toISOString(), connected: true });
   });
 }
 

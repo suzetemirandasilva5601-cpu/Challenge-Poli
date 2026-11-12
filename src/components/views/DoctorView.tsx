@@ -10,6 +10,7 @@ import { ageFrom, formatDate, formatDateTime } from "@/lib/dates";
 import { summaryForShare } from "@/lib/doctor";
 import { geminiConfigured } from "@/lib/gemini";
 import { analyteSeries, fmt, formatRef, medicationMarkers, wearableSnapshot } from "@/lib/health";
+import { availableMetrics } from "@/lib/metrics";
 import { decodeSharePayload, scopedData, shareState, type ScopedData } from "@/lib/share";
 import { logAccess, openDocumentFile, useDb } from "@/lib/store";
 import { fallbackSummary, generateDoctorSummary } from "@/lib/summary";
@@ -116,6 +117,8 @@ function Dashboard({
   const docs = new Map(data.documents.map((d) => [d.id, d]));
   const timeline = buildTimeline(data).filter((e) => e.kind === "exame" || e.kind === "consulta");
   const w = data.wearableDays.length ? wearableSnapshot(data.wearableDays) : null;
+  // Só os sinais medidos por aparelhos que o paciente tem conectados
+  const have = availableMetrics(data.devices);
   const cacheKey = `${data.labResults.length}-${data.alerts.map((a) => a.id).join(",")}-${data.wearableDays.at(-1)?.irregularRhythmEvents ?? 0}`;
 
   return (
@@ -193,21 +196,37 @@ function Dashboard({
             <section>
               <DocH2>Wearables</DocH2>
               <p className="num -mt-1 mb-3 text-sm text-ink-600">
-                Médias de 7 dias: FC repouso <strong>{w.restingHr} bpm</strong> · sono <strong>{fmt(w.sleepHours)} h</strong> · SpO2 mín. <strong>{w.spo2Min}%</strong> · PA <strong>{w.systolic}/{w.diastolic}</strong>
+                Médias de 7 dias:{" "}
+                {[
+                  have.has("restingHr") && <span key="fc">FC repouso <strong>{w.restingHr} bpm</strong></span>,
+                  have.has("sleep") && <span key="sono">sono <strong>{fmt(w.sleepHours)} h</strong></span>,
+                  have.has("spo2") && <span key="spo2">SpO2 mín. <strong>{w.spo2Min}%</strong></span>,
+                  have.has("bp") && <span key="pa">PA <strong>{w.systolic}/{w.diastolic}</strong></span>,
+                ]
+                  .filter(Boolean)
+                  .flatMap((el, i) => (i ? [" · ", el] : [el]))}
+                <span className="block text-xs text-ink-500">Aparelhos: {data.devices.map((d) => d.name).join(", ") || "nenhum"}</span>
               </p>
               <div className="grid gap-3 md:grid-cols-2">
+                {have.has("irregular") && (
                 <div className="card px-2">
                   <p className="px-2 pt-1 text-[15px] font-semibold">Ritmo irregular (episódios/dia)</p>
                   <WearableChart days={data.wearableDays} unit="episódios" kind="bar" domain={[0, "auto"]} defaultRange={90} height={150} series={[{ key: "irregularRhythmEvents", name: "Episódios", color: CHART.out }]} />
                 </div>
+                )}
+                {have.has("restingHr") && (
                 <div className="card px-2">
                   <p className="px-2 pt-1 text-[15px] font-semibold">FC de repouso</p>
                   <WearableChart days={data.wearableDays} unit="bpm" height={150} series={[{ key: "restingHr", name: "FC repouso", color: CHART.ink }]} />
                 </div>
+                )}
+                {have.has("spo2") && (
                 <div className="card px-2">
                   <p className="px-2 pt-1 text-[15px] font-semibold">SpO2 mínima noturna</p>
                   <WearableChart days={data.wearableDays} unit="%" domain={[80, 100]} height={150} refs={[{ y: 90, label: "90%" }]} series={[{ key: "spo2Min", name: "SpO2", color: CHART.blue }]} />
                 </div>
+                )}
+                {have.has("bp") && (
                 <div className="card px-2">
                   <p className="px-2 pt-1 text-[15px] font-semibold">Pressão arterial (medidor domiciliar)</p>
                   <WearableChart
@@ -219,6 +238,7 @@ function Dashboard({
                     series={[{ key: "systolic", name: "Sistólica", color: CHART.plum }, { key: "diastolic", name: "Diastólica", color: CHART.plum, dashed: true }]}
                   />
                 </div>
+                )}
               </div>
             </section>
           )}

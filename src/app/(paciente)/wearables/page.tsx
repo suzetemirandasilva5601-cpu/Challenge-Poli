@@ -1,100 +1,129 @@
 "use client";
 
+import Link from "next/link";
 import { CHART, WearableChart } from "@/components/charts";
-import { WatchIcon } from "@/components/icons";
+import { DeviceManager } from "@/components/DeviceManager";
+import { ChevronRight } from "@/components/icons";
 import { AlertCard, Disclaimer, SectionTitle, Skeleton } from "@/components/ui";
 import { formatDate } from "@/lib/dates";
 import { computeAlerts } from "@/lib/health";
-import { simulateIrregularRhythm, useDb } from "@/lib/store";
+import { availableMetrics, METRIC_NEEDS, METRICS, sourceOf, type MetricKey } from "@/lib/metrics";
+import { useDb } from "@/lib/store";
+
+type Db = NonNullable<ReturnType<typeof useDb>>;
 
 export default function WearablesPage() {
   const db = useDb();
   return (
     <div>
-      <h1 className="page-title">Sinais dos wearables</h1>
-      <p className="mt-1 text-sm text-ink-600">Batimento, sono, oxigenação, pressão e atividade, no mesmo histórico dos seus exames.</p>
-      {db ? <Wearables db={db} /> : <Skeleton lines={5} />}
+      <h1 className="page-title">Sinais</h1>
+      <p className="mt-1 text-sm text-ink-600">O que seus aparelhos medem, no mesmo histórico dos seus exames. Cada sinal aparece quando um aparelho que o mede está conectado.</p>
+      {db ? <Signals db={db} /> : <Skeleton lines={5} />}
     </div>
   );
 }
 
-function Wearables({ db }: { db: NonNullable<ReturnType<typeof useDb>> }) {
+/** Ordem de exibição dos sinais na tela. */
+const ORDER: MetricKey[] = ["irregular", "restingHr", "spo2", "breathing", "bp", "sleep", "hrv", "steps"];
+
+function Signals({ db }: { db: Db }) {
+  const have = availableMetrics(db.devices);
   const alerts = computeAlerts(db).filter((a) => a.kind !== "exames");
-  const days = db.wearableDays;
-  const irregular = days.filter((d) => d.irregularRhythmEvents > 0).reverse();
+  const shown = ORDER.filter((m) => have.has(m));
+  const missing = ORDER.filter((m) => !have.has(m));
 
   return (
     <div>
-      <SectionTitle>Dispositivos conectados</SectionTitle>
-      <ul className="card divide-y divide-ink-100 p-0">
-        {db.devices.map((d) => (
-          <li key={d.id} className="flex items-center gap-3 px-4 py-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700"><WatchIcon width={18} height={18} /></span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">{d.name}</p>
-              <p className="truncate text-xs text-ink-500">{d.metrics.join(" · ")}</p>
-            </div>
-            <span className="flex items-center gap-1 text-xs font-semibold text-brand-700"><span className="h-2 w-2 rounded-full bg-brand-500" />sincronizado</span>
-          </li>
-        ))}
-      </ul>
+      {alerts.length > 0 && (
+        <>
+          <SectionTitle>Alertas</SectionTitle>
+          <div className="grid gap-3 md:grid-cols-2 md:items-start">
+            {alerts.map((a) => <AlertCard key={a.id} alert={a} />)}
+          </div>
+        </>
+      )}
 
-      <SectionTitle>Alertas</SectionTitle>
-      <div className="space-y-3">
-        {alerts.length ? alerts.map((a) => <AlertCard key={a.id} alert={a} />) : <p className="card text-sm text-ink-600">Nenhum alerta nos wearables.</p>}
-      </div>
-      <button className="btn-secondary mt-3 w-full text-xs" onClick={() => simulateIrregularRhythm()}>
-        Demo: simular episódios de ritmo irregular
-      </button>
-
-      <SectionTitle>Frequência cardíaca de repouso</SectionTitle>
-      <div className="card px-2">
-        <WearableChart days={days} unit="bpm" series={[{ key: "restingHr", name: "FC repouso", color: CHART.ink }]} />
-      </div>
-
-      <SectionTitle>Ritmo irregular</SectionTitle>
-      <div className="card px-2">
-        <WearableChart days={days} unit="episódios" kind="bar" domain={[0, "auto"]} defaultRange={90} series={[{ key: "irregularRhythmEvents", name: "Episódios", color: CHART.out }]} />
-        {irregular.length > 0 && (
-          <p className="px-2 pb-1 text-xs text-ink-500">
-            Registros: {irregular.slice(0, 6).map((d) => `${formatDate(d.date, { day: "2-digit", month: "2-digit" })} (${d.irregularRhythmEvents})`).join(", ")}
-          </p>
-        )}
-      </div>
-
-      <SectionTitle>Oxigenação mínima à noite (SpO2)</SectionTitle>
-      <div className="card px-2">
-        <WearableChart days={days} unit="%" domain={[80, 100]} refs={[{ y: 90, label: "90%" }]} series={[{ key: "spo2Min", name: "SpO2 mínima", color: CHART.blue }]} />
-      </div>
-
-      <SectionTitle>Pressão arterial</SectionTitle>
-      <div className="card px-2">
-        <WearableChart
-          days={days}
-          unit="mmHg"
-          domain={[60, 160]}
-          refs={[{ y: 130, label: "130", color: CHART.warn }, { y: 80, label: "80", color: CHART.warn }]}
-          series={[{ key: "systolic", name: "Sistólica", color: CHART.plum }, { key: "diastolic", name: "Diastólica", color: CHART.plum, dashed: true }]}
-        />
-      </div>
-
-      <SectionTitle>Sono e variabilidade cardíaca</SectionTitle>
-      <div className="card space-y-4 px-2">
-        <div>
-          <p className="px-2 text-[15px] font-semibold">Horas de sono por noite</p>
-          <WearableChart days={days} unit="h" kind="bar" domain={[0, 10]} series={[{ key: "sleepHours", name: "Sono", color: CHART.night }]} />
+      {shown.length === 0 && (
+        <div className="card mt-6 text-center">
+          <p className="font-serif text-lg font-semibold text-ink-900">Nenhum aparelho conectado</p>
+          <p className="mt-1 text-sm text-ink-600">Conecte um relógio, anel ou medidor de pressão abaixo para acompanhar seus sinais.</p>
         </div>
-        <div className="border-t border-ink-100 pt-3">
-          <p className="px-2 text-[15px] font-semibold">Variabilidade cardíaca (VFC, ms)</p>
-          <WearableChart days={days} unit="ms" series={[{ key: "hrvMs", name: "VFC", color: CHART.band }]} />
-        </div>
-      </div>
+      )}
 
-      <SectionTitle>Passos</SectionTitle>
-      <div className="card px-2">
-        <WearableChart days={days} unit="passos" kind="bar" domain={[0, "auto"]} series={[{ key: "steps", name: "Passos", color: CHART.sage }]} />
-      </div>
+      {shown.map((m) => (
+        <Signal key={m} metric={m} db={db} />
+      ))}
+
+      {missing.length > 0 && shown.length > 0 && (
+        <>
+          <SectionTitle>Para ver mais sinais</SectionTitle>
+          <div className="space-y-2">
+            {missing.map((m) => (
+              <a key={m} href="#aparelhos" className="card-link flex items-center gap-3 py-3">
+                <span className="flex-1">
+                  <span className="block text-[15px] font-semibold text-ink-900">{METRICS[m].label}</span>
+                  <span className="block text-sm text-ink-600">Conecte {METRIC_NEEDS[m]}.</span>
+                </span>
+                <ChevronRight width={18} className="shrink-0 text-ink-400" />
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+
+      <section id="aparelhos" className="scroll-mt-20">
+        <SectionTitle>Aparelhos e apps conectados</SectionTitle>
+        <DeviceManager db={db} />
+      </section>
+
+      <p className="mt-6 text-sm text-ink-600">
+        Para enviar um exame em papel ou PDF, use o botão <Link href="/enviar" className="font-semibold text-brand-700 underline">Exame</Link>.
+      </p>
       <Disclaimer />
     </div>
+  );
+}
+
+/** Um sinal: título, de onde vem, como é medido e o gráfico. */
+function Signal({ metric, db }: { metric: MetricKey; db: Db }) {
+  const days = db.wearableDays;
+  const info = METRICS[metric];
+  const source = sourceOf(metric, db.devices);
+  const irregular = metric === "irregular" ? days.filter((d) => d.irregularRhythmEvents > 0).reverse() : [];
+
+  return (
+    <section>
+      <SectionTitle>{info.label}</SectionTitle>
+      <div className="card px-2">
+        <p className="px-2 pb-1 text-xs text-ink-500">
+          {source} · {info.how}
+        </p>
+        {metric === "restingHr" && <WearableChart days={days} unit="bpm" series={[{ key: "restingHr", name: "FC repouso", color: CHART.ink }]} />}
+        {metric === "irregular" && (
+          <>
+            <WearableChart days={days} unit="episódios" kind="bar" domain={[0, "auto"]} defaultRange={90} series={[{ key: "irregularRhythmEvents", name: "Episódios", color: CHART.out }]} />
+            {irregular.length > 0 && (
+              <p className="px-2 pb-1 text-xs text-ink-500">
+                Registros: {irregular.slice(0, 6).map((d) => `${formatDate(d.date, { day: "2-digit", month: "2-digit" })} (${d.irregularRhythmEvents})`).join(", ")}
+              </p>
+            )}
+          </>
+        )}
+        {metric === "spo2" && <WearableChart days={days} unit="%" domain={[80, 100]} refs={[{ y: 90, label: "90%" }]} series={[{ key: "spo2Min", name: "SpO2 mínima", color: CHART.blue }]} />}
+        {metric === "breathing" && <WearableChart days={days} unit="por hora" domain={[0, "auto"]} refs={[{ y: 15, label: "15", color: CHART.warn }]} series={[{ key: "breathingDisturbances", name: "Pausas/h", color: CHART.night }]} />}
+        {metric === "bp" && (
+          <WearableChart
+            days={days}
+            unit="mmHg"
+            domain={[60, 160]}
+            refs={[{ y: 130, label: "130", color: CHART.warn }, { y: 80, label: "80", color: CHART.warn }]}
+            series={[{ key: "systolic", name: "Sistólica", color: CHART.plum }, { key: "diastolic", name: "Diastólica", color: CHART.plum, dashed: true }]}
+          />
+        )}
+        {metric === "sleep" && <WearableChart days={days} unit="h" kind="bar" domain={[0, 10]} series={[{ key: "sleepHours", name: "Sono", color: CHART.night }]} />}
+        {metric === "hrv" && <WearableChart days={days} unit="ms" series={[{ key: "hrvMs", name: "VFC", color: CHART.band }]} />}
+        {metric === "steps" && <WearableChart days={days} unit="passos" kind="bar" domain={[0, "auto"]} series={[{ key: "steps", name: "Passos", color: CHART.sage }]} />}
+      </div>
+    </section>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useUnreadCount } from "@/lib/chat";
 import { ChatIcon, DoctorIcon, HomeIcon, PlusIcon, VitalsIcon } from "./icons";
 
@@ -14,7 +14,7 @@ import { ChatIcon, DoctorIcon, HomeIcon, PlusIcon, VitalsIcon } from "./icons";
 const ITEMS = [
   { href: "/", label: "Início", icon: HomeIcon, match: (p: string) => p === "/" },
   { href: "/conversa", label: "Elo", icon: ChatIcon, match: (p: string) => p.startsWith("/conversa"), chat: true },
-  { href: "/enviar", label: "Adicionar", icon: PlusIcon, match: (p: string) => p.startsWith("/enviar"), primary: true },
+  { href: "/enviar", label: "Exame", ariaLabel: "Adicionar exame (foto ou PDF)", icon: PlusIcon, match: (p: string) => p.startsWith("/enviar"), primary: true },
   { href: "/wearables", label: "Sinais", icon: VitalsIcon, match: (p: string) => p.startsWith("/wearables") },
   { href: "/compartilhar", label: "Médico", icon: DoctorIcon, match: (p: string) => p.startsWith("/compartilhar") },
 ];
@@ -36,15 +36,28 @@ export function BottomNav() {
   );
 }
 
+/** Última aba da barra visitada: é para onde a seta de voltar leva (HeaderBack). */
+export const LAST_TAB_KEY = "elo-saude:ultima-aba";
+
 function ActiveNavItems() {
-  return <NavItems pathname={usePathname()} />;
+  const pathname = usePathname();
+  useEffect(() => {
+    const tab = ITEMS.find((i) => i.match(pathname));
+    if (!tab) return;
+    try {
+      sessionStorage.setItem(LAST_TAB_KEY, tab.href);
+    } catch {
+      // sem armazenamento: a seta volta para o Início
+    }
+  }, [pathname]);
+  return <NavItems pathname={pathname} />;
 }
 
 function NavItems({ pathname }: { pathname: string }) {
   const unread = useUnreadCount();
   return (
     <ul className="mx-auto flex max-w-md items-stretch justify-around px-1 md:max-w-xl">
-      {ITEMS.map(({ href, label, icon: Icon, match, primary, chat }) => {
+      {ITEMS.map(({ href, label, ariaLabel, icon: Icon, match, primary, chat }) => {
         const active = pathname !== "" && match(pathname);
         const badge = chat && unread > 0 ? unread : 0;
         return (
@@ -52,7 +65,7 @@ function NavItems({ pathname }: { pathname: string }) {
             <Link
               href={href}
               aria-current={active ? "page" : undefined}
-              aria-label={badge ? `${label}, ${badge} ${badge === 1 ? "mensagem nova" : "mensagens novas"}` : undefined}
+              aria-label={badge ? `${label}, ${badge} ${badge === 1 ? "mensagem nova" : "mensagens novas"}` : ariaLabel}
               className={`relative flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-semibold transition-colors ${active ? "text-brand-700" : "text-ink-500 hover:text-ink-800"}`}
             >
               {/* Indicador da aba ativa: fio no topo, além da cor e do aria-current */}

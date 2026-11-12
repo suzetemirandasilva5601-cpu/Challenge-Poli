@@ -6,6 +6,7 @@ import { ageFrom, formatDate } from "./dates";
 import { buildDoctorLink } from "./doctor";
 import { ACCEPTED_TYPES, extractLabReport, fileType, MAX_UPLOAD_BYTES, NoKeyError } from "./extraction";
 import { analyteSeries, computeAlerts, fmt, formatRef, labStatus, wearableSnapshot, type LabStatus } from "./health";
+import { availableMetrics } from "./metrics";
 import { absoluteUrl } from "./paths";
 import { shareState } from "./share";
 import { createShare, getDbSnapshot, revokeShare, saveExam } from "./store";
@@ -219,19 +220,25 @@ async function describeAnalytes(keys: string[], say: Say) {
 
 async function describeVitals(say: Say) {
   const db = getDbSnapshot();
-  if (!db.wearableDays.length) return say({ text: "Ainda não recebi medições do relógio nem do medidor de pressão." });
+  const have = availableMetrics(db.devices);
+  if (!db.wearableDays.length || !have.size) {
+    return say({
+      text: "Nenhum relógio ou medidor está conectado. Conecte um na tela Sinais para eu acompanhar suas medições.",
+      actions: [{ kind: "link", label: "Conectar aparelho", href: "/wearables#aparelhos" }],
+    });
+  }
   const w = wearableSnapshot(db.wearableDays);
   const bpHigh = w.systolic >= 130 || w.diastolic >= 80;
+  // Só o que algum aparelho conectado mede
+  const lines = [
+    have.has("restingHr") && `• Batimentos em repouso: *${w.restingHr} bpm* (média)`,
+    have.has("bp") && `• Pressão: *${w.systolic}/${w.diastolic} mmHg* (média)${bpHigh ? ", acima da meta de 130/80" : ""}`,
+    have.has("spo2") && `• Saturação mínima: *${w.spo2Min}%*${w.spo2Min < 90 ? ", abaixo de 90%" : ""}`,
+    have.has("sleep") && `• Sono: *${fmt(w.sleepHours)} h* por noite`,
+    have.has("steps") && `• Passos: *${w.steps.toLocaleString("pt-BR")}* por dia`,
+  ].filter(Boolean);
   return say({
-    text: [
-      "Suas medições dos últimos 7 dias:",
-      "",
-      `• Batimentos em repouso: *${w.restingHr} bpm* (média)`,
-      `• Pressão: *${w.systolic}/${w.diastolic} mmHg* (média)${bpHigh ? ", acima da meta de 130/80" : ""}`,
-      `• Saturação mínima: *${w.spo2Min}%*${w.spo2Min < 90 ? ", abaixo de 90%" : ""}`,
-      `• Sono: *${fmt(w.sleepHours)} h* por noite`,
-      `• Passos: *${w.steps.toLocaleString("pt-BR")}* por dia`,
-    ].join("\n"),
+    text: ["Suas medições dos últimos 7 dias:", "", ...lines].join("\n"),
     actions: [{ kind: "link", label: "Ver gráficos", href: "/wearables" }],
   });
 }

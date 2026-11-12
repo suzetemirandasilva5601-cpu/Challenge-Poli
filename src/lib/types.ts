@@ -99,7 +99,12 @@ export interface WearableDevice {
   id: string;
   name: string;
   kind: "relogio" | "anel" | "medidor_pressao";
+  /** Texto livre legado; o que vale é `provides` (ou o padrão do tipo, em lib/metrics.ts). */
   metrics: string[];
+  /** Métricas que este aparelho fornece. Ausente: o padrão do tipo de aparelho. */
+  provides?: import("./metrics").MetricKey[];
+  /** false quando o usuário desconectou. Os dados antigos ficam, mas não aparecem. */
+  connected?: boolean;
   connectedAt: string;
 }
 
