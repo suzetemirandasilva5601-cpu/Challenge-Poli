@@ -85,7 +85,7 @@ export function TimelineList({ events }: { events: TimelineEvent[] }) {
               <span className={`absolute -left-[15px] flex h-7 w-7 items-center justify-center rounded-full border ring-4 ring-paper ${iconCls} ${showYear ? "top-[3.25rem]" : "top-3"}`}>
                 <Icon width={15} height={15} />
               </span>
-              {e.href ? <Link href={e.href} className="block rounded-xl transition-colors [&>div]:hover:border-brand-300">{body}</Link> : body}
+              {e.href ? <Link href={e.href} className="block [&>div]:transition-[box-shadow,translate] [&>div]:duration-200 [&>div]:hover:-translate-y-0.5 [&>div]:hover:shadow-glass-hover">{body}</Link> : body}
             </li>
           );
         })}

@@ -88,6 +88,7 @@ export function computeAlerts(db: Db, today = todayISO()): HealthAlert[] {
       severity: "procure_medico",
       title: "Ritmo cardíaco irregular",
       message: `O relógio registrou ${irregularCount} episódios de batimento irregular nos últimos 14 dias. Esse padrão pode ser sinal de fibrilação atrial.`,
+      clinical: `${irregularCount} episódios de ritmo irregular detectados pelo relógio em 14 dias. Padrão a investigar para fibrilação atrial (ECG/Holter).`,
       recommendation:
         "Marque consulta com um cardiologista nos próximos dias. Se tiver dor no peito, falta de ar forte, desmaio ou fraqueza de um lado do corpo, vá ao pronto-socorro ou ligue 192.",
       specialty: "Cardiologia",
@@ -106,6 +107,7 @@ export function computeAlerts(db: Db, today = todayISO()): HealthAlert[] {
       severity: "procure_medico",
       title: "Sinais de apneia do sono",
       message: `Em ${apneaNights.length} das últimas 30 noites, a saturação de oxigênio ficou abaixo de 90% (menor valor: ${minSpo2}%), com muitas pausas na respiração.`,
+      clinical: `SpO2 mínima < 90% em ${apneaNights.length} de 30 noites (nadir ${minSpo2}%), com ≥ 15 distúrbios respiratórios/h. Compatível com apneia do sono; polissonografia a considerar.`,
       recommendation: "Procure um pneumologista ou um médico do sono. O exame que confirma ou descarta apneia é a polissonografia.",
       specialty: "Medicina do sono",
       evidence: [
@@ -128,6 +130,7 @@ export function computeAlerts(db: Db, today = todayISO()): HealthAlert[] {
         severity: high ? "procure_medico" : "atencao",
         title: "Pressão acima da meta",
         message: `Sua pressão ficou em média ${sys}/${dia} mmHg nos últimos 30 dias${onMed ? ", mesmo tomando remédio para pressão" : ""}. A meta costuma ser abaixo de 130/80.`,
+        clinical: `PA domiciliar média de ${sys}/${dia} mmHg em 30 dias (${last30.length} medições)${onMed ? ", em uso de anti-hipertensivo" : ", sem anti-hipertensivo registrado"}. Acima da meta de 130/80.`,
         recommendation: onMed
           ? "Mostre estas medidas ao médico que trata sua pressão. Pode ser preciso ajustar o remédio."
           : "Marque uma consulta para avaliar a pressão.",
@@ -153,6 +156,7 @@ export function computeAlerts(db: Db, today = todayISO()): HealthAlert[] {
         severity: "atencao",
         title: "Batimentos em repouso mais altos",
         message: `Na última semana, seus batimentos em repouso ficaram em ${Math.round(now)} bpm. Antes, o normal para você era ${Math.round(base)} bpm.`,
+        clinical: `FC de repouso média de ${Math.round(now)} bpm nos últimos 7 dias, contra ${Math.round(base)} bpm de 2 a 8 semanas atrás (+${Math.round(now - base)} bpm).`,
         recommendation: "Estresse, noites mal dormidas ou uma infecção podem causar isso. Se continuar ou vier com outros sintomas, fale com seu médico.",
         evidence: [`Últimos 7 dias: ${Math.round(now)} bpm`, `De 2 a 8 semanas atrás: ${Math.round(base)} bpm`],
       });
@@ -170,6 +174,7 @@ export function computeAlerts(db: Db, today = todayISO()): HealthAlert[] {
       severity: "atencao",
       title: "Exames alterados no último ano",
       message: `${recentOut.length === 1 ? "Um resultado do último ano está" : `${recentOut.length} resultados do último ano estão`} fora do valor de referência do laudo.`,
+      clinical: `${recentOut.length === 1 ? "Um exame" : `${recentOut.length} exames`} com último resultado do último ano fora da referência do laudo: ${recentOut.map((s) => s.name).join(", ")}.`,
       recommendation: "Leve estes resultados à próxima consulta. Um valor fora da referência nem sempre é problema; quem interpreta é o médico.",
       evidence: recentOut.map((s) => `${s.name}: ${fmt(s.latest.value!)} ${s.unit} (${s.status}; referência ${formatRef(s.latest)})`),
     });

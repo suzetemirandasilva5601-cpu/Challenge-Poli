@@ -37,6 +37,10 @@ export default function DemoPage() {
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-paper"><LogoMark width={24} height={24} /></span>
           <span className="font-serif text-xl font-semibold">Elo Saúde</span>
           <span className="text-brand-200">· paciente e médico, ao vivo</span>
+          {/* O app em si não mostra avisos de teste; a demonstração deixa claro aqui */}
+          <span className="ml-2 inline-flex items-center gap-1.5 rounded-full bg-warn-100 px-3 py-1 text-xs font-bold text-warn-900">
+            Demonstração · todos os dados são fictícios
+          </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <button className="rounded-lg bg-brand-800 px-3 py-2 font-semibold hover:bg-brand-700" onClick={() => simulateIrregularRhythm()}>

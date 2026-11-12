@@ -10,14 +10,14 @@ import { AlertIcon, ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronRight, MinusIc
  */
 export function StatusBadge({ status }: { status: LabStatus }) {
   const map = {
-    alto: ["Alto", ArrowUpIcon, "bg-danger-50 text-danger-700 border-danger-200"],
-    baixo: ["Baixo", ArrowDownIcon, "bg-warn-50 text-warn-800 border-warn-200"],
-    normal: ["Normal", CheckIcon, "bg-white text-ink-600 border-ink-200"],
-    sem_faixa: ["Sem referência", MinusIcon, "bg-ink-50 text-ink-600 border-ink-200"],
+    alto: ["Alto", ArrowUpIcon, "bg-danger-100 text-danger-800"],
+    baixo: ["Baixo", ArrowDownIcon, "bg-warn-100 text-warn-900"],
+    normal: ["Normal", CheckIcon, "bg-ink-900/[0.06] text-ink-600"],
+    sem_faixa: ["Sem referência", MinusIcon, "bg-ink-900/[0.06] text-ink-600"],
   } as const;
   const [label, Icon, cls] = map[status];
   return (
-    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-md border px-1.5 py-0.5 text-xs font-semibold ${cls}`}>
+    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold ${cls}`}>
       <Icon width={12} />
       {label}
     </span>
@@ -41,26 +41,53 @@ export function SectionLink({ href, children }: { href: string; children: React.
   );
 }
 
-export function AlertCard({ alert, compact, cta = true }: { alert: HealthAlert; compact?: boolean; cta?: boolean }) {
+export function AlertCard({
+  alert,
+  compact,
+  cta = true,
+  audience = "paciente",
+}: {
+  alert: HealthAlert;
+  compact?: boolean;
+  cta?: boolean;
+  /** "medico": texto clínico em terceira pessoa, sem as orientações ao paciente. */
+  audience?: "paciente" | "medico";
+}) {
   const urgent = alert.severity === "procure_medico";
   const Icon = urgent ? UrgentIcon : AlertIcon;
+  const forDoctor = audience === "medico";
   return (
-    <article
-      className={`rounded-xl border border-l-4 bg-white p-4 ${urgent ? "border-danger-200 border-l-danger-600" : "border-warn-200 border-l-warn-500"}`}
-    >
-      <p className={`flex items-center gap-1.5 text-sm font-semibold ${urgent ? "text-danger-700" : "text-warn-800"}`}>
-        <Icon width={16} />
-        {urgent ? "Procure um médico" : "Atenção"}
+    // Vidro com leve tom da gravidade + pílula com ícone e texto (não depende só da cor)
+    <article className={`card p-0 ${urgent ? "bg-danger-50/70" : "bg-warn-50/70"}`}>
+      <div className="p-4">
+      <p
+        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${
+          urgent ? "bg-danger-600 text-white shadow-[0_4px_12px_-4px_rgb(180_35_24/0.6)]" : "bg-warn-200/80 text-warn-900"
+        }`}
+      >
+        <Icon width={14} />
+        {forDoctor ? (urgent ? "Prioridade alta" : "Atenção") : urgent ? "Procure um médico" : "Atenção"}
       </p>
-      <h3 className="mt-1 text-[17px] font-semibold leading-snug text-ink-900">{alert.title}</h3>
-      <p className="mt-1 text-[15px] text-ink-700">{alert.message}</p>
+      <h3 className="mt-2.5 font-serif text-xl font-semibold leading-snug text-ink-900">{alert.title}</h3>
+      <p className="mt-1 text-[15px] text-ink-700">{forDoctor ? alert.clinical : alert.message}</p>
       {!compact && (
         <>
-          <p className="mt-3 border-t border-ink-100 pt-3 text-[15px] text-ink-900">
-            <span className="font-semibold">O que fazer: </span>
-            {alert.recommendation}
-          </p>
-          {alert.specialty && <p className="mt-1 text-sm text-ink-600">Especialidade: {alert.specialty}</p>}
+          {forDoctor ? (
+            alert.specialty && (
+              <p className="well mt-3 px-3 py-2.5 text-sm text-ink-700">
+                <span className="font-semibold text-ink-900">Encaminhamento a considerar: </span>
+                {alert.specialty}
+              </p>
+            )
+          ) : (
+            <div className="well mt-3 px-3 py-2.5">
+              <p className="text-[15px] text-ink-900">
+                <span className="font-semibold">O que fazer: </span>
+                {alert.recommendation}
+              </p>
+              {alert.specialty && <p className="mt-1 text-sm text-ink-600">Especialidade: {alert.specialty}</p>}
+            </div>
+          )}
           {alert.evidence.length > 0 && (
             <details className="mt-1 text-sm text-ink-600">
               <summary className="inline-flex min-h-11 items-center font-semibold text-brand-700">Ver medições</summary>
@@ -76,6 +103,7 @@ export function AlertCard({ alert, compact, cta = true }: { alert: HealthAlert; 
           )}
         </>
       )}
+      </div>
     </article>
   );
 }

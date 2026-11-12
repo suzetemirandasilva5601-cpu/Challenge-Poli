@@ -24,7 +24,7 @@ Um site web mobile-first para o paciente (instalável como app) e uma tela deskt
  │                  laudos originais em IndexedDB            │
  │ lib/health.ts ── séries de exames e regras de alerta      │
  │ lib/extraction.ts ─ prompt + schema + normalização ───────┼──► Gemini API (Google)
- │ lib/summary.ts ── contexto clínico + resumo ──────────────┼──► (chave do usuário)
+ │ lib/summary.ts ── contexto clínico + resumo ──────────────┼──► (chave da equipe no build)
  │ lib/share.ts ─── consentimento e link autocontido         │
  └───────────────┬───────────────────────────────────────────┘
                  │ link /medico/?t=TOKEN#d=<dados compactados>
@@ -77,7 +77,7 @@ Os alertas indicam quando procurar atendimento. Eles não fazem diagnóstico, e 
 
 ## Privacidade e segurança no protótipo
 
-- Nenhuma chave no código nem no site publicado. A chave da Gemini fica no navegador de quem a digitou.
+- Nenhuma chave no código-fonte. A chave da Gemini (plano gratuito, só para o hackathon) entra no build por `NEXT_PUBLIC_GEMINI_API_KEY`, lida do `.env.local`, que o Git ignora. Como o site é estático, a chave fica visível no JavaScript publicado: restrinja-a no Google Cloud (Credenciais → a chave → Restrições de aplicativo: sites `https://suzetemirandasilva5601-cpu.github.io/*` e `http://localhost:3000/*`; Restrições de API: só Generative Language API). Em produção, a chave vai para um servidor (ver abaixo).
 - O histórico nunca sai do aparelho, exceto: (1) o arquivo do laudo e o contexto clínico, enviados à Gemini quando a IA está ligada; (2) a cópia autorizada, dentro do link que o paciente envia ao médico.
 - Uploads: lista fechada de tipos e limite de 10 MB. Dados vindos da IA ou do formulário são validados e limitados antes de gravar.
 - A visão do médico não é indexada por buscadores (`noindex`).

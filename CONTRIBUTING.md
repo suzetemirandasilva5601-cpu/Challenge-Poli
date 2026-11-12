@@ -59,7 +59,7 @@ Evite trabalhar duas pessoas no mesmo arquivo ao mesmo tempo. Combine no grupo q
 ## 4. Regras do projeto
 
 - **Só dados sintéticos.** Nunca suba exame, nome ou dado de saúde de pessoa real.
-- **Nunca suba chaves de API.** A chave da Gemini fica só no navegador de cada pessoa (⚙ Configurações). Arquivos `.env*` já estão no `.gitignore`.
+- **Nunca suba chaves de API.** A chave da Gemini fica no arquivo `.env.local` de quem faz o build (`NEXT_PUBLIC_GEMINI_API_KEY=...`). Arquivos `.env*` já estão no `.gitignore`. Nunca escreva a chave no código nem em mensagens.
 - O site é estático (sem servidor). Não adicione rotas de API nem código que dependa de servidor.
 - Se mudar a estrutura de dados em `src/lib/types.ts`, ajuste também `seed.ts` e `store.ts`.
 

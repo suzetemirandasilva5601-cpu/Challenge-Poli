@@ -42,7 +42,7 @@ export function buildClinicalContext(data: ScopedData): string {
 
   if (data.alerts.length) {
     lines.push("", "ALERTAS AUTOMÁTICOS");
-    for (const a of data.alerts) lines.push(`- ${a.title}: ${a.message} Evidências: ${a.evidence.join("; ")}`);
+    for (const a of data.alerts) lines.push(`- ${a.title}: ${a.clinical} Evidências: ${a.evidence.join("; ")}`);
   }
 
   if (data.vaccines.length) {
@@ -105,6 +105,8 @@ export const isRuleSummary = (s: DoctorSummary) => s.geradoPor.startsWith("regra
 export function fallbackSummary(data: ScopedData): DoctorSummary {
   const out = analyteSeries(data.labResults).filter((s) => s.status === "alto" || s.status === "baixo");
   const active = data.medications.filter((m) => !m.endDate);
+  // Só relógio e medidor de pressão; exames alterados já entram na frase anterior
+  const home = data.alerts.filter((a) => a.kind !== "exames");
   // Minúscula só na inicial, e nunca em siglas (TSH, PSA, LDL...)
   const low = (t: string) => (/^\p{Lu}{2}/u.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1));
   const list = (xs: string[]) => (xs.length > 1 ? `${xs.slice(0, -1).join(", ")} e ${xs.at(-1)}` : xs[0] ?? "");
@@ -116,12 +118,12 @@ export function fallbackSummary(data: ScopedData): DoctorSummary {
       out.length
         ? `${out.length === 1 ? "Último resultado alterado" : `${out.length} exames com último resultado alterado`}: ${list(out.map((s) => low(s.name)))}.`
         : "Últimos exames dentro da referência.",
-      data.alerts.length
-        ? `${data.alerts.length === 1 ? "Um alerta" : `${data.alerts.length} alertas`} da monitorização domiciliar: ${list(data.alerts.map((a) => low(a.title)))}.`
+      home.length
+        ? `${home.length === 1 ? "Um alerta" : `${home.length} alertas`} da monitorização domiciliar: ${list(home.map((a) => low(a.title)))}.`
         : "",
     ].filter(Boolean).join(" "),
     pontosDeAtencao: [
-      ...data.alerts.map((a) => ({ titulo: a.title, detalhe: a.message })),
+      ...data.alerts.map((a) => ({ titulo: a.title, detalhe: a.clinical })),
       ...out.slice(0, 3).map((s) => ({
         titulo: s.name,
         detalhe: `${s.latest.value != null ? fmt(s.latest.value) : s.latest.valueText} ${s.unit} em ${formatDate(s.latest.date)} (referência ${formatRef(s.latest)}).`,

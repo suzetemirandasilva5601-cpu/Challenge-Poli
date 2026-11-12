@@ -7,6 +7,21 @@ export interface Patient {
   sex: "F" | "M";
   bloodType?: string;
   allergies: string[];
+  /** Condições de saúde conhecidas (ex.: hipertensão). */
+  conditions?: string[];
+  heightCm?: number;
+  weightKg?: number;
+  emergencyContact?: { name: string; relation?: string; phone: string };
+  /** Operadora do plano de saúde (só o nome; sem número da carteirinha). */
+  healthPlan?: string;
+}
+
+/** Preferências do usuário. Campos ausentes valem o padrão (tudo ligado). */
+export interface Prefs {
+  /** Avisar na conversa e no topo da tela quando surgir um alerta deste tipo. */
+  notify?: Partial<Record<HealthAlert["kind"], boolean>>;
+  /** Mostrar o aviso que desce no topo da tela. */
+  toast?: boolean;
 }
 
 export type ExtractionSource = "gemini" | "simulado" | "manual" | "seed";
@@ -118,10 +133,29 @@ export interface DoctorSummary {
   geradoEm: string;
 }
 
+/** Quem recebe o acesso. Clínica e hospital: o histórico fica com a instituição, não com um só médico. */
+export type RecipientKind = "medico" | "clinica" | "hospital";
+
+export const RECIPIENTS: Record<RecipientKind, { label: string; nameLabel: string; namePlaceholder: string; idLabel: string; idPlaceholder: string }> = {
+  medico: { label: "Médico", nameLabel: "Nome do médico", namePlaceholder: "Dra. Ana Ribeiro", idLabel: "CRM", idPlaceholder: "123456/SP" },
+  clinica: { label: "Clínica", nameLabel: "Nome da clínica", namePlaceholder: "Clínica São Lucas", idLabel: "CNES", idPlaceholder: "1234567" },
+  hospital: { label: "Hospital", nameLabel: "Nome do hospital", namePlaceholder: "Hospital Santa Clara", idLabel: "CNES", idPlaceholder: "1234567" },
+};
+
+/** "Dra. Ana Ribeiro" ou "Clínica São Lucas (clínica)", com o registro quando houver. */
+export function recipientText(s: Pick<Share, "doctorName" | "doctorCrm" | "recipientKind">, withId = false): string {
+  const kind = s.recipientKind ?? "medico";
+  const id = withId && s.doctorCrm ? ` · ${RECIPIENTS[kind].idLabel} ${s.doctorCrm}` : "";
+  return `${s.doctorName}${id}`;
+}
+
 export interface Share {
   token: string;
+  /** Nome de quem recebe: médico, clínica ou hospital (nome mantido por compatibilidade). */
   doctorName: string;
+  /** CRM do médico ou CNES da instituição. */
   doctorCrm?: string;
+  recipientKind?: RecipientKind;
   scopes: Scope[];
   createdAt: string;
   expiresAt: string;
@@ -142,6 +176,7 @@ export interface Db {
   wearableDays: WearableDay[];
   devices: WearableDevice[];
   shares: Share[];
+  prefs?: Prefs;
 }
 
 export type AlertSeverity = "atencao" | "procure_medico";
@@ -151,7 +186,10 @@ export interface HealthAlert {
   kind: "ritmo_irregular" | "apneia" | "pressao" | "fc_repouso" | "exames";
   severity: AlertSeverity;
   title: string;
+  /** Texto para o paciente (segunda pessoa). */
   message: string;
+  /** Mesmo achado em linguagem clínica e terceira pessoa, para a tela do médico. */
+  clinical: string;
   recommendation: string;
   specialty?: string;
   evidence: string[];

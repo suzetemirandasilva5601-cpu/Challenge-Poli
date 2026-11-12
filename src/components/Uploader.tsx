@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ageFrom } from "@/lib/dates";
@@ -13,7 +12,7 @@ import { CameraIcon, FileIcon, ScanIcon } from "./icons";
 import { SectionTitle, StatusBadge } from "./ui";
 
 type Phase =
-  | { step: "idle"; error?: string; needsKey?: boolean }
+  | { step: "idle"; error?: string }
   | { step: "reading"; filename: string }
   | { step: "review"; file: File; extraction: Extraction | null; warning?: string };
 
@@ -59,7 +58,7 @@ export function Uploader() {
     } catch (err) {
       if (err instanceof NoKeyError) {
         setPreview(null);
-        setPhase({ step: "idle", needsKey: true, error: "Para ler este laudo com IA, informe uma chave da Gemini em Configurações. Os dois laudos de exemplo abaixo funcionam sem chave." });
+        setPhase({ step: "review", file, extraction: null, warning: "A leitura automática não está disponível agora." });
         return;
       }
       setPhase({ step: "review", file, extraction: null, warning: "A IA não conseguiu ler o laudo agora. Tente de novo ou preencha os resultados à mão." });
@@ -87,7 +86,7 @@ export function Uploader() {
       {phase.error && (
         <p className="mb-3 rounded-xl bg-danger-50 px-3 py-2 text-sm text-danger-700 ring-1 ring-danger-200">
           {phase.error}
-          {phase.needsKey && <> <Link href="/configuracoes" className="font-semibold underline">Abrir Configurações</Link></>}
+          
         </p>
       )}
       <input ref={fileRef} type="file" accept="application/pdf,image/*" className="hidden" onChange={onPick} />
@@ -105,7 +104,7 @@ export function Uploader() {
         </button>
       </div>
 
-      <SectionTitle>Laudos de exemplo (fictícios)</SectionTitle>
+      <SectionTitle>Laudos de exemplo</SectionTitle>
       <div className="space-y-2">
         {SAMPLES.map((s) => (
           <div key={s.file} className="card flex items-center gap-3 p-3">
@@ -120,8 +119,8 @@ export function Uploader() {
         ))}
       </div>
       <p className="mt-8 text-sm leading-relaxed text-ink-500">
-        Com a IA ligada, o arquivo vai do seu navegador direto para a Gemini API (Google), só para leitura. O histórico fica
-        salvo apenas neste navegador. Use dados sintéticos ou seus próprios; dados de outra pessoa só com o consentimento dela.
+        O arquivo é lido por IA (Gemini, do Google) só para extrair os resultados. O histórico fica salvo neste aparelho.
+        Envie apenas exames seus ou de quem te autorizou.
       </p>
     </div>
   );
@@ -218,7 +217,7 @@ function Review({ phase, preview, onCancel }: { phase: Extract<Phase, { step: "r
     <div>
       <div className={`mb-3 rounded-xl px-3 py-2 text-sm ring-1 ${ex?.source === "gemini" ? "bg-brand-50 text-brand-900 ring-brand-200" : "bg-warn-50 text-warn-900 ring-warn-200"}`}>
         {ex?.source === "gemini" && <>A IA leu <strong>{rows.length} resultados</strong> ({ex.model}). Confira e corrija o que for preciso antes de salvar.</>}
-        {ex?.source === "simulado" && <>Leitura pré-gravada deste laudo de exemplo (IA desligada ou indisponível). Com uma chave da Gemini em Configurações, a leitura é feita ao vivo.</>}
+        {ex?.source === "simulado" && <>Lemos <strong>{rows.length} resultados</strong> deste laudo de exemplo. Confira e corrija o que for preciso antes de salvar.</>}
         {!ex && <>{phase.warning ?? "Não foi possível ler o laudo."} Você pode adicionar os resultados manualmente.</>}
       </div>
       {ex?.patientName && <p className="mb-2 text-xs text-ink-500">Nome no laudo: {ex.patientName}</p>}
@@ -284,7 +283,7 @@ function Review({ phase, preview, onCancel }: { phase: Extract<Phase, { step: "r
       </div>
 
       {error && <p className="mt-3 rounded-xl bg-danger-50 px-3 py-2 text-sm text-danger-700 ring-1 ring-danger-200">{error}</p>}
-      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] mt-4 flex gap-2 border-t border-ink-200 bg-paper py-3">
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] glass -mx-4 mt-4 flex gap-2 px-4 py-3 shadow-[0_-1px_0_rgb(20_40_32/0.06)]">
         <button type="button" className="btn-secondary flex-1" onClick={onCancel} disabled={pending}>Cancelar</button>
         <button type="button" className="btn-primary flex-[2]" onClick={submit} disabled={pending || !rows.length || !date}>
           {pending ? "Salvando…" : `Salvar ${rows.length} resultados`}

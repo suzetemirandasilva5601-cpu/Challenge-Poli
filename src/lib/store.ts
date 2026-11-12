@@ -5,7 +5,7 @@ import { analyteInfo, resolveAnalyteKey } from "./analytes";
 import { resetChat } from "./chat";
 import { addDays, isValidISODate, todayISO } from "./dates";
 import { createSeedDb, extendWearablesToToday } from "./seed";
-import { SCOPES, type Db, type DoctorSummary, type ExtractionSource, type Scope } from "./types";
+import { RECIPIENTS, SCOPES, type Db, type RecipientKind, type DoctorSummary, type ExtractionSource, type Scope } from "./types";
 
 /**
  * Armazenamento da versão web: tudo fica no navegador da pessoa.
@@ -209,9 +209,67 @@ export function simulateIrregularRhythm() {
   });
 }
 
+// ---------- perfil e preferências ----------
+
+const list = (xs: string[] | undefined, max = 20) =>
+  [...new Set((xs ?? []).map((x) => clean(x, 80)).filter(Boolean))].slice(0, max);
+const num = (n: number | undefined, min: number, max: number) =>
+  n != null && Number.isFinite(n) && n >= min && n <= max ? Math.round(n * 10) / 10 : undefined;
+
+export function updatePatient(form: {
+  name: string;
+  birthDate: string;
+  sex: "F" | "M";
+  bloodType?: string;
+  allergies?: string[];
+  conditions?: string[];
+  heightCm?: number;
+  weightKg?: number;
+  healthPlan?: string;
+  emergencyContact?: { name: string; relation?: string; phone: string };
+}): { error: string } | { ok: true } {
+  const name = clean(form.name, 100);
+  if (name.length < 2) return { error: "Informe seu nome." };
+  if (!isValidISODate(form.birthDate) || form.birthDate > todayISO()) return { error: "Informe uma data de nascimento válida." };
+  const ec = form.emergencyContact;
+  const ecName = clean(ec?.name, 80);
+  const ecPhone = clean(ec?.phone, 30).replace(/[^\d+()\s-]/g, "");
+  if ((ecName && !ecPhone) || (!ecName && ecPhone)) return { error: "Para o contato de emergência, informe nome e telefone." };
+  update((db) => {
+    db.patient = {
+      ...db.patient,
+      name,
+      birthDate: form.birthDate,
+      sex: form.sex === "F" ? "F" : "M",
+      bloodType: clean(form.bloodType, 4) || undefined,
+      allergies: list(form.allergies),
+      conditions: list(form.conditions),
+      heightCm: num(form.heightCm, 40, 250),
+      weightKg: num(form.weightKg, 2, 400),
+      healthPlan: clean(form.healthPlan, 80) || undefined,
+      emergencyContact: ecName ? { name: ecName, relation: clean(ec?.relation, 40) || undefined, phone: ecPhone } : undefined,
+    };
+  });
+  return { ok: true };
+}
+
+export function updatePrefs(mutate: (p: NonNullable<Db["prefs"]>) => void) {
+  update((db) => {
+    db.prefs ??= {};
+    mutate(db.prefs);
+  });
+}
+
+/** Cópia de todo o histórico estruturado, para a pessoa baixar (portabilidade, LGPD art. 18). */
+export function exportData(): Blob {
+  const db = getDbSnapshot();
+  return new Blob([JSON.stringify({ exportadoEm: new Date().toISOString(), ...db }, null, 2)], { type: "application/json" });
+}
+
 export async function resetDemo() {
   update((db) => {
     Object.assign(db, createSeedDb());
+    delete db.prefs;
   });
   resetChat();
   try {
@@ -226,13 +284,23 @@ function newToken(): string {
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-export function createShare(form: { doctorName: string; doctorCrm?: string; scopes: string[]; hours: number }): { error: string } | { token: string } {
+/** Prazos permitidos, em horas. 90 dias e 1 ano fazem sentido para clínica e hospital. */
+export const SHARE_HOURS = [1, 24, 168, 720, 2160, 8760];
+
+export function createShare(form: {
+  doctorName: string;
+  doctorCrm?: string;
+  recipientKind?: RecipientKind;
+  scopes: string[];
+  hours: number;
+}): { error: string } | { token: string } {
+  const recipientKind: RecipientKind = form.recipientKind && form.recipientKind in RECIPIENTS ? form.recipientKind : "medico";
   const doctorName = clean(form.doctorName, 100);
   const doctorCrm = clean(form.doctorCrm, 30) || undefined;
   const scopes = form.scopes.filter((s): s is Scope => SCOPES.includes(s as Scope));
-  if (!doctorName) return { error: "Informe o nome do médico." };
+  if (!doctorName) return { error: `Informe o ${RECIPIENTS[recipientKind].nameLabel.toLowerCase()}.` };
   if (!scopes.length) return { error: "Escolha pelo menos um tipo de dado para compartilhar." };
-  if (![1, 24, 168, 720].includes(form.hours)) return { error: "Prazo inválido." };
+  if (!SHARE_HOURS.includes(form.hours)) return { error: "Prazo inválido." };
 
   const token = newToken();
   const now = new Date();
@@ -241,6 +309,7 @@ export function createShare(form: { doctorName: string; doctorCrm?: string; scop
       token,
       doctorName,
       doctorCrm,
+      recipientKind,
       scopes,
       createdAt: now.toISOString(),
       expiresAt: new Date(now.getTime() + form.hours * 3_600_000).toISOString(),

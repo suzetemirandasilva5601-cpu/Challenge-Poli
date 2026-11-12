@@ -1,14 +1,19 @@
 /**
- * Cliente da Gemini API chamado direto do navegador. A chave é digitada pela
- * pessoa em Configurações e fica só no localStorage deste navegador: nunca é
- * embutida no site publicado.
+ * Cliente da Gemini API chamado direto do navegador, com a chave da equipe
+ * embutida no build (hackathon, plano gratuito, só dados fictícios).
+ *
+ * A chave vem de NEXT_PUBLIC_GEMINI_API_KEY no arquivo .env.local (ignorado
+ * pelo Git): nunca escreva a chave no código. Como o site é estático, ela vai
+ * no JavaScript publicado; por isso, restrinja a chave no Google Cloud ao
+ * domínio do site (ver docs/ARQUITETURA.md). Sem a variável, o app usa a
+ * leitura pré-gravada dos laudos de exemplo e o resumo por regras.
  *
  * Tenta cada modelo em ordem; se um estiver sobrecarregado ou demorar demais,
  * passa para o próximo.
  */
 
 const API = "https://generativelanguage.googleapis.com/v1beta/models";
-const KEY_STORAGE = "elo-saude:gemini-key";
+const BUILT_IN_KEY = (process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "").trim();
 export const MODELS = ["gemini-3.5-flash", "gemini-3-flash-preview", "gemini-3.8-flash"];
 
 export type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
@@ -16,14 +21,7 @@ export type GeminiPart = { text: string } | { inlineData: { mimeType: string; da
 export class GeminiUnavailableError extends Error {}
 
 export function getGeminiKey(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(KEY_STORAGE);
-}
-
-export function setGeminiKey(key: string | null) {
-  if (key) localStorage.setItem(KEY_STORAGE, key.trim());
-  else localStorage.removeItem(KEY_STORAGE);
-  window.dispatchEvent(new Event("elo-saude:gemini-key"));
+  return BUILT_IN_KEY || null;
 }
 
 export function geminiConfigured(): boolean {
@@ -81,20 +79,4 @@ async function attempt<T>(
     .join("");
   if (!text) throw new Error(`resposta vazia (${body?.candidates?.[0]?.finishReason ?? "sem candidato"})`);
   return JSON.parse(text) as T;
-}
-
-/** Teste rápido da chave, usado na tela de Configurações. */
-export async function testGeminiKey(): Promise<{ ok: true; model: string } | { ok: false; error: string }> {
-  try {
-    const { model } = await generateJson<{ ok: boolean }>({
-      system: "Responda apenas o JSON pedido.",
-      parts: [{ text: 'Responda {"ok": true}' }],
-      schema: { type: "OBJECT", properties: { ok: { type: "BOOLEAN" } }, required: ["ok"] },
-      timeoutMs: 20_000,
-    });
-    return { ok: true, model };
-  } catch (err) {
-    const msg = (err as Error).message;
-    return { ok: false, error: /API key not valid|API_KEY_INVALID/i.test(msg) ? "Chave inválida." : "Não foi possível falar com a Gemini agora." };
-  }
 }

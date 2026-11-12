@@ -43,7 +43,7 @@ export function DoctorSummary({ load, cacheKey }: { load: () => Promise<Summary>
         <h2 className="flex items-center gap-2 font-serif text-xl font-semibold text-ink-900">
           <ClipboardIcon className="h-5 w-5 text-brand-700" /> Resumo clínico
           {data && (
-            <span className="rounded border border-ink-200 px-1.5 py-0.5 font-sans text-xs font-semibold text-ink-600">
+            <span className="rounded-sm bg-ink-100 px-1.5 py-0.5 font-sans text-xs font-semibold text-ink-600">
               {data.geradoPor.startsWith("regras") ? "por regras" : "gerado por IA"}
             </span>
           )}

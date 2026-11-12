@@ -1,5 +1,5 @@
 import { computeAlerts } from "./health";
-import type { Db, DoctorSummary, Encounter, Medication, Patient, Scope, Share, Vaccine, WearableDay } from "./types";
+import type { Db, DoctorSummary, Encounter, Medication, Patient, RecipientKind, Scope, Share, Vaccine, WearableDay } from "./types";
 
 export type ShareState = "ativo" | "expirado" | "revogado";
 
@@ -40,7 +40,7 @@ export type ScopedData = ReturnType<typeof scopedData>;
 
 interface Snapshot {
   v: 1;
-  sh: { t: string; n: string; c?: string; sc: Scope[]; ca: string; ea: string };
+  sh: { t: string; n: string; c?: string; k?: RecipientKind; sc: Scope[]; ca: string; ea: string };
   p: Patient;
   d: [id: string, date: string, lab: string | null, by: string][];
   l: [doc: number, key: string, name: string, value: number | null, unit: string, lo: number | null, hi: number | null, text: string | null][];
@@ -62,7 +62,7 @@ function toSnapshot(share: Share, data: ScopedData, summary?: DoctorSummary): Sn
   };
   return {
     v: 1,
-    sh: { t: share.token, n: share.doctorName, c: share.doctorCrm, sc: share.scopes, ca: share.createdAt, ea: share.expiresAt },
+    sh: { t: share.token, n: share.doctorName, c: share.doctorCrm, k: share.recipientKind, sc: share.scopes, ca: share.createdAt, ea: share.expiresAt },
     p: data.patient,
     d: data.documents.map((d) => [d.id, d.examDate, d.lab ?? null, d.extractedBy]),
     l: data.labResults.map((r) => [
@@ -120,6 +120,7 @@ function fromSnapshot(s: Snapshot): { share: Share; data: ScopedData; summary?: 
     token: s.sh.t,
     doctorName: s.sh.n,
     doctorCrm: s.sh.c,
+    recipientKind: s.sh.k,
     scopes: s.sh.sc,
     createdAt: s.sh.ca,
     expiresAt: s.sh.ea,

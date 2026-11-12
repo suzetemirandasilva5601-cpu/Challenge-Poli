@@ -20,8 +20,8 @@ Protótipo para o desafio da Rivio (demo em 14/11/2026, Gama House). Usa IA para
 
 - É um site estático (Next.js com `output: "export"`), publicado no GitHub Pages. Não há servidor.
 - O histórico fica salvo **no navegador** de quem usa (localStorage + IndexedDB para os arquivos dos laudos).
-- A IA é chamada direto do navegador. **A chave da Gemini não fica no site:** cada pessoa cola a sua em ⚙️ Configurações e ela fica salva só naquele navegador.
-- Sem chave, os dois laudos de exemplo usam uma leitura pré-gravada e o resumo do médico é feito por regras. Todo o resto funciona.
+- A IA é chamada direto do navegador, com a chave da equipe (plano gratuito da Gemini, só para o hackathon). A chave entra no build pelo arquivo `.env.local` (`NEXT_PUBLIC_GEMINI_API_KEY=...`), que o Git ignora. Restrinja a chave ao domínio do site no Google Cloud (ver docs/ARQUITETURA.md).
+- Sem a chave no build, os dois laudos de exemplo usam uma leitura pré-gravada e o resumo do médico é feito por regras. Todo o resto funciona.
 - Instalável no celular (PWA): "Adicionar à Tela de Início" no iPhone ou "Instalar app" no Android.
 
 ## Rodar localmente

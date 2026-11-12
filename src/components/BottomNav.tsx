@@ -3,11 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
-import { DoctorIcon, HistoryIcon, HomeIcon, PlusIcon, VitalsIcon } from "./icons";
+import { useUnreadCount } from "@/lib/chat";
+import { ChatIcon, DoctorIcon, HomeIcon, PlusIcon, VitalsIcon } from "./icons";
 
+/**
+ * A conversa com o Elo fica na barra, ao alcance do polegar: é o jeito mais
+ * fácil de perguntar sobre exames e receber os alertas. O Histórico está no
+ * cabeçalho (HistoryButton).
+ */
 const ITEMS = [
   { href: "/", label: "Início", icon: HomeIcon, match: (p: string) => p === "/" },
-  { href: "/historico", label: "Histórico", icon: HistoryIcon, match: (p: string) => p.startsWith("/historico") || p.startsWith("/exames") || p.startsWith("/exame") },
+  { href: "/conversa", label: "Elo", icon: ChatIcon, match: (p: string) => p.startsWith("/conversa"), chat: true },
   { href: "/enviar", label: "Adicionar", icon: PlusIcon, match: (p: string) => p.startsWith("/enviar"), primary: true },
   { href: "/wearables", label: "Sinais", icon: VitalsIcon, match: (p: string) => p.startsWith("/wearables") },
   { href: "/compartilhar", label: "Médico", icon: DoctorIcon, match: (p: string) => p.startsWith("/compartilhar") },
@@ -19,7 +25,10 @@ const ITEMS = [
  */
 export function BottomNav() {
   return (
-    <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 border-t border-ink-200 bg-white pb-[env(safe-area-inset-bottom)]">
+    <nav
+      aria-label="Principal"
+      className="glass fixed inset-x-0 bottom-0 z-30 pb-[env(safe-area-inset-bottom)] shadow-[0_-1px_0_rgb(20_40_32/0.06)]"
+    >
       <Suspense fallback={<NavItems pathname="" />}>
         <ActiveNavItems />
       </Suspense>
@@ -32,26 +41,39 @@ function ActiveNavItems() {
 }
 
 function NavItems({ pathname }: { pathname: string }) {
+  const unread = useUnreadCount();
   return (
-    <ul className="mx-auto flex max-w-md items-stretch justify-around px-1">
-      {ITEMS.map(({ href, label, icon: Icon, match, primary }) => {
+    <ul className="mx-auto flex max-w-md items-stretch justify-around px-1 md:max-w-xl">
+      {ITEMS.map(({ href, label, icon: Icon, match, primary, chat }) => {
         const active = pathname !== "" && match(pathname);
+        const badge = chat && unread > 0 ? unread : 0;
         return (
           <li key={href} className="flex-1">
             <Link
               href={href}
               aria-current={active ? "page" : undefined}
+              aria-label={badge ? `${label}, ${badge} ${badge === 1 ? "mensagem nova" : "mensagens novas"}` : undefined}
               className={`relative flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-semibold transition-colors ${active ? "text-brand-700" : "text-ink-500 hover:text-ink-800"}`}
             >
               {/* Indicador da aba ativa: fio no topo, além da cor e do aria-current */}
-              <span className={`absolute inset-x-4 top-0 h-[3px] rounded-b ${active ? "bg-brand-600" : "bg-transparent"}`} aria-hidden />
+              <span className={`absolute inset-x-4 top-0 h-[3px] ${active ? "bg-brand-600" : "bg-transparent"}`} aria-hidden />
               {primary ? (
                 <span className={`flex h-8 w-11 items-center justify-center rounded-lg ${active ? "bg-brand-700" : "bg-brand-600"} text-white`}>
                   <Icon width={20} />
                 </span>
               ) : (
                 // Ativo: ícone preenchido, como nos apps nativos
-                <Icon width={24} weight={active ? "fill" : "regular"} />
+                <span className="relative">
+                  <Icon width={24} weight={active ? "fill" : "regular"} />
+                  {badge > 0 && (
+                    <span
+                      className="num absolute -right-2.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-danger-600 px-1 text-xs font-bold leading-none text-white ring-2 ring-white"
+                      aria-hidden
+                    >
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
+                </span>
               )}
               {label}
             </Link>

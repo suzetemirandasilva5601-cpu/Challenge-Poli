@@ -82,7 +82,7 @@ function SeriesList({ series }: { series: AnalyteSeries[] }) {
   );
 }
 
-const SOURCE_LABEL = { gemini: "lido por IA", simulado: "leitura pré-gravada", manual: "digitado", seed: "importado" } as const;
+const SOURCE_LABEL = { gemini: "lido por IA", simulado: "laudo de exemplo", manual: "digitado", seed: "importado" } as const;
 
 function DocumentPanel({ db, docId, isNew }: { db: Db; docId: string; isNew: boolean }) {
   const doc = db.documents.find((d) => d.id === docId)!;

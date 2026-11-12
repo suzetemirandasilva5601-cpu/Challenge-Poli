@@ -7,7 +7,7 @@ Modo apresentação (para projetar): https://suzetemirandasilva5601-cpu.github.i
 
 ## Antes de subir no palco
 
-- [ ] No notebook da apresentação, abra o site, vá em ⚙️ **Configurações** e cole a chave da Gemini. Espere "Chave funcionando".
+- [ ] Confirme que o build publicado foi gerado com a chave da Gemini no `.env.local` (ver README). Envie um laudo de teste: a tela deve dizer "A IA leu…".
 - [ ] Abra o **modo apresentação** (`/demo/`) em tela cheia (F11). Do lado esquerdo fica o celular do paciente; do lado direito, a tela do médico.
 - [ ] Clique em **Restaurar dados** no topo, para começar limpo.
 - [ ] Faça um teste de leitura de laudo, depois restaure de novo.
@@ -19,7 +19,7 @@ Modo apresentação (para projetar): https://suzetemirandasilva5601-cpu.github.i
 |---|---|---|---|
 | 0:00 – 1:00 | Abertura | Slide com o Carlos | O histórico do Carlos está em quatro laboratórios, dois hospitais, uma gaveta e um relógio. O médico vê só o que ele lembra de levar. Resultado: exame repetido e decisão com informação incompleta. |
 | 1:00 – 1:45 | Solução | Slide com os três pilares | Estruturar o passado, acompanhar o presente, mostrar ao médico. Mais de 230 milhões de pessoas por semana já perguntam sobre saúde ao ChatGPT (dado da OpenAI): essas conversas precisam do histórico completo. |
-| 1:45 – 2:15 | Demo | Celular: **Início** | Já há dois alertas do relógio e do medidor de pressão: sinais de apneia e pressão acima da meta mesmo com remédio. Abra "Ver dados". |
+| 1:45 – 2:15 | Demo | Celular: **Início** | Já há três alertas do relógio e do medidor de pressão: sinais de apneia, pressão acima da meta mesmo com remédio e batimentos em repouso mais altos. Abra "Ver medições" no alerta de apneia. |
 | 2:15 – 3:30 | Demo | Celular: **Enviar → PDF do laboratório** | A IA lê 14 exames em poucos segundos, com unidade e faixa do laudo. Toque em "Comparar com o original" e salve. Os resultados fora da faixa aparecem em destaque. |
 | 3:30 – 4:30 | Demo | **Enviar → Foto de exame em papel** (ou fotografe o impresso) | É o exame de dez anos atrás, torto e amarelado. Salve e abra **Histórico → Exames → Colesterol LDL**: dez anos numa curva, faixa do laudo em verde e o início da atorvastatina marcado. O LDL caiu com o remédio e voltou a subir. |
 | 4:30 – 5:00 | Demo | **Histórico → Linha do tempo** | Exames, consultas, remédios e vacinas na mesma linha, com filtros. |

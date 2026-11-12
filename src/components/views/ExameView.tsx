@@ -31,7 +31,7 @@ export function ExameView() {
         <ChevronRight width={18} height={18} className="rotate-180" /> Exames
       </Link>
       <h1 className="mt-1 page-title">{s.name}</h1>
-      <div className="mt-3 flex items-end justify-between gap-3 rounded-xl border border-ink-200 bg-white p-4">
+      <div className="card mt-3 flex items-end justify-between gap-3">
         <div>
           <p className="text-sm text-ink-500">Último resultado · {formatDate(s.latest.date)}</p>
           <p className="num font-serif text-[2rem] font-semibold leading-tight text-ink-900">

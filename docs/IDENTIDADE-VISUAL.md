@@ -4,7 +4,7 @@ Referência rápida para quem mexer na interface. Os tokens ficam em `src/app/gl
 
 ## Ideia
 
-O app trata de histórico de saúde, então a referência é um **prontuário bem diagramado**: papel quente, tinta escura, títulos em serifa, fios finos separando seções. Isso afasta o visual genérico de "app de IA" (gradientes, azul-ciano, brilhos, cartões muito arredondados com sombra) e passa calma e credibilidade.
+O app trata de histórico de saúde, então a referência é um **prontuário bem diagramado**: papel quente, tinta escura, títulos em serifa, fios finos separando seções. Com uma camada de vidro translúcido por cima (no espírito do visual da Apple): superfícies leves, cantos suaves, sem bordas cinza. Evitamos o visual genérico de "app de IA" (azul-ciano, brilhos e roxo neon).
 
 ## Marca
 
@@ -41,9 +41,14 @@ Os pares vieram das buscas da skill ui-ux-pro-max ("News Editorial" para título
 
 ## Componentes e layout
 
-- **Cartão** (`card`): borda `ink-200`, raio 12 px, sem sombra.
+- **Vidro** (`glass`): branco a 65% com desfoque e saturação do que está atrás. Usado nos cartões, no cabeçalho e na barra inferior. O fundo da página tem manchas de cor bem suaves (verde, argila, azul) para o vidro ter o que desfocar.
+- **Cartão** (`card`): vidro, raio de 22 px (`--radius-card`), **sem borda cinza**: um fio de luz branca no topo e sombra longa e macia (`shadow-glass`). Clicável: `card-link`, que sobe 2 px com `shadow-glass-hover`.
+- **Área interna** (`well`): tom levemente mais escuro com sombra interna, raio de 16 px, para o "O que fazer" dos alertas e avisos secundários.
+- **Botões e etiquetas:** em pílula (`rounded-full`). Status de exame em pílula preenchida, sem contorno.
+- **Variação de peso:** a ficha médica tem capa verde em degradê; o convite "Tem consulta marcada?" é um bloco verde em degradê. Evite telas só de cartões brancos iguais.
 - **Título de seção** (`<SectionTitle>`): versalete pequeno com um fio até a margem.
-- **Alertas** (`<AlertCard>`): faixa de 4 px à esquerda na cor da gravidade, rótulo com ícone, recomendação separada por um fio.
+- **Alertas** (`<AlertCard>`): vidro com leve tom da gravidade (vermelho ou âmbar), pílula com ícone e texto ("Procure um médico" em vermelho cheio, "Atenção" em âmbar), título em serifa e recomendação numa área interna.
+- **Navegação:** a conversa com o Elo é uma aba da barra inferior (com contador de mensagens novas); o Histórico fica no cabeçalho.
 - **Alvos de toque:** botões, links de ação e abas com pelo menos 44 px de altura (`min-h-11`).
 - **Foco:** contorno verde de 2 px em todo elemento focado pelo teclado (definido em `globals.css`).
 - **Movimento:** transições de 200 ms, desligadas com `prefers-reduced-motion`.

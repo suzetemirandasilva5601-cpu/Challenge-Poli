@@ -14,7 +14,7 @@ import { decodeSharePayload, scopedData, shareState, type ScopedData } from "@/l
 import { logAccess, openDocumentFile, useDb } from "@/lib/store";
 import { fallbackSummary, generateDoctorSummary } from "@/lib/summary";
 import { buildTimeline } from "@/lib/timeline";
-import { SCOPE_LABELS, type DoctorSummary as Summary, type Share } from "@/lib/types";
+import { RECIPIENTS, recipientText, SCOPE_LABELS, type DoctorSummary as Summary, type Share } from "@/lib/types";
 
 const DENIED = {
   nao_encontrado: "Este link de acesso não existe ou está incompleto.",
@@ -139,10 +139,10 @@ function Dashboard({
             )}
           </dl>
         </div>
-        <div className="flex gap-3 rounded-lg border border-brand-100 bg-brand-50 p-3 text-sm text-brand-900 md:max-w-sm">
+        <div className="flex gap-3 bg-brand-50 p-3 shadow-inset text-sm text-brand-900 md:max-w-sm">
           <ShieldIcon className="h-5 w-5 shrink-0 text-brand-700" />
           <p>
-            Acesso autorizado pelo paciente para <strong>{share.doctorName}</strong> até {formatDateTime(share.expiresAt)}.
+            Acesso autorizado pelo paciente para <strong>{recipientText(share, true)}</strong>{share.recipientKind && share.recipientKind !== "medico" ? ` (${RECIPIENTS[share.recipientKind].label.toLowerCase()}: vale para os médicos da instituição)` : ""} até {formatDateTime(share.expiresAt)}.
             Escopo: {share.scopes.map((s) => SCOPE_LABELS[s].toLowerCase()).join(", ")}.
             {fromLink ? " Cópia enviada pelo paciente por link." : " Este acesso fica registrado."}
           </p>
@@ -157,7 +157,7 @@ function Dashboard({
             <section>
               <DocH2>Alertas automáticos</DocH2>
               <div className="grid gap-3 md:grid-cols-2">
-                {data.alerts.map((a) => <AlertCard key={a.id} alert={a} cta={false} />)}
+                {data.alerts.map((a) => <AlertCard key={a.id} alert={a} cta={false} audience="medico" />)}
               </div>
             </section>
           )}

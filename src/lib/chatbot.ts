@@ -25,6 +25,9 @@ const norm = (t: string) =>
 
 const has = (t: string, re: RegExp) => re.test(t);
 
+/** Minúscula só na inicial, preservando siglas ("Colesterol LDL" → "colesterol LDL"). */
+const lowerFirst = (t: string) => (/^\p{Lu}{2}/u.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1));
+
 const STATUS_WORD: Record<LabStatus, string> = { alto: "alto", baixo: "baixo", normal: "normal", sem_faixa: "sem referência" };
 
 export const SAMPLE_FILES = [
@@ -90,6 +93,11 @@ export async function respondToText(raw: string, say: Say, opts: { fromButton?: 
     return say({ text: `Olá, ${name}. Em que posso ajudar?`, actions: menuActions() });
   }
   if (has(t, /revogar|tirar o acesso|cancelar acesso|cancelar o acesso/)) return listShares(say);
+  // Quem viu ou pode ver o histórico (antes de "exame", para "o médico viu meus exames?")
+  if (has(t, /\bacess|quem (ve|viu|pode ver)|medic[oa] (ja )?(viu|abriu|olhou)|\b(viu|abriu|olhou) (o )?(meu|meus|minha)/)) return listShares(say);
+  // Assuntos que juntam mais de um exame
+  if (has(t, /acucar|diabet|glicemi/)) return describeAnalytes(["glicose", "hba1c"], say);
+  if (has(t, /\brins?\b|renal/)) return describeAnalytes(["creatinina"], say);
   if (has(t, /alerta|aviso/)) return listAlerts(say);
   if (has(t, /\b(enviar|mandar|anexar|subir|carregar|fotografar)\b/)) return askFile(say);
 
@@ -142,9 +150,12 @@ async function createReport(doctorName: string, hours: number, label: string, sa
 
 async function listShares(say: Say) {
   const active = getDbSnapshot().shares.filter((s) => shareState(s) === "ativo");
-  if (!active.length) return say({ text: "Nenhum médico tem acesso ao seu histórico agora." });
+  if (!active.length) return say({ text: "Nenhum médico tem acesso ao seu histórico agora. Para mandar, peça um *relatório para o médico*." });
+  const opened = (n: number) => (n ? `, aberto ${n === 1 ? "1 vez" : `${n} vezes`}` : ", ainda não aberto");
   return say({
-    text: "Estes médicos têm acesso agora:\n\n" + active.map((s) => `• *${s.doctorName}*, até ${formatDate(s.expiresAt)}`).join("\n"),
+    text:
+      "Estes médicos têm acesso agora:\n\n" +
+      active.map((s) => `• *${s.doctorName}*, até ${formatDate(s.expiresAt)}${opened(s.accessLog.length)}`).join("\n"),
     actions: active.slice(0, 4).map((s) => ({ kind: "revoke" as const, label: `Revogar ${s.doctorName}`, token: s.token })),
   });
 }
@@ -199,6 +210,13 @@ async function describeAnalyte(key: string, say: Say) {
   return say({ text: lines.join("\n"), actions: [{ kind: "link", label: "Ver gráfico", href: `/exame/?a=${encodeURIComponent(key)}` }] });
 }
 
+async function describeAnalytes(keys: string[], say: Say) {
+  for (const [i, key] of keys.entries()) {
+    if (i > 0) await new Promise((r) => setTimeout(r, 400));
+    await describeAnalyte(key, say);
+  }
+}
+
 async function describeVitals(say: Say) {
   const db = getDbSnapshot();
   if (!db.wearableDays.length) return say({ text: "Ainda não recebi medições do relógio nem do medidor de pressão." });
@@ -221,7 +239,7 @@ async function describeVitals(say: Say) {
 async function listMeds(say: Say) {
   const meds = getDbSnapshot().medications.filter((m) => !m.endDate);
   if (!meds.length) return say({ text: "Não tenho nenhum remédio em uso registrado." });
-  return say({ text: "Remédios em uso:\n\n" + meds.map((m) => `• *${m.name} ${m.dose}*, ${m.frequency}${m.reason ? ` (${m.reason.toLowerCase()})` : ""}`).join("\n") });
+  return say({ text: "Remédios em uso:\n\n" + meds.map((m) => `• *${m.name} ${m.dose}*, ${m.frequency}${m.reason ? ` (${lowerFirst(m.reason)})` : ""}`).join("\n") });
 }
 
 async function askFile(say: Say) {
@@ -250,8 +268,8 @@ export async function respondToFile(picked: File, say: Say) {
   } catch (err) {
     if (err instanceof NoKeyError) {
       return say({
-        text: "Para ler este arquivo eu preciso da leitura por IA, que está desligada. Você pode ligar em Configurações ou testar com um dos laudos de exemplo.",
-        actions: [{ kind: "link", label: "Abrir Configurações", href: "/configuracoes" }, ...SAMPLE_FILES.map((s) => ({ kind: "sample" as const, ...s }))],
+        text: "A leitura automática não está disponível agora. Você pode digitar os resultados na tela Adicionar ou testar com um dos laudos de exemplo.",
+        actions: [{ kind: "link", label: "Abrir Adicionar", href: "/enviar" }, ...SAMPLE_FILES.map((s) => ({ kind: "sample" as const, ...s }))],
       });
     }
     return say({
@@ -275,7 +293,6 @@ export async function respondToFile(picked: File, say: Say) {
   const header = [
     `Li *${rows.length} resultados*${ex.lab ? ` do laudo *${ex.lab}*` : ""}${ex.examDate ? `, coleta de ${formatDate(ex.examDate)}` : ""}.`,
     altered ? `${altered === 1 ? "1 está" : `${altered} estão`} fora da referência.` : "Todos dentro da referência.",
-    ex.source === "simulado" ? "Esta é a leitura pré-gravada do laudo de exemplo." : "",
   ].filter(Boolean).join(" ");
 
   if (!ex.examDate) {

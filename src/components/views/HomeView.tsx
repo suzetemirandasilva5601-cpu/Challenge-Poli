@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { AlertIcon, ChevronRight, ClipboardIcon, DropIcon, GaugeIcon, HeartIcon, MoonIcon } from "@/components/icons";
+import { AlertIcon, CheckIcon, ChevronRight, ClipboardIcon, DropIcon, GaugeIcon, HeartIcon, MoonIcon } from "@/components/icons";
 import { AlertCard, Disclaimer, SectionLink, SectionTitle, Skeleton, StatusBadge } from "@/components/ui";
-import { AiStatusBanner } from "@/components/AiStatus";
+import type { HealthAlert, WearableDay } from "@/lib/types";
 import { ageFrom, formatDate } from "@/lib/dates";
 import { analyteSeries, computeAlerts, fmt, formatRef, wearableSnapshot } from "@/lib/health";
-import { resetDemo, simulateIrregularRhythm, useDb } from "@/lib/store";
+import { useDb } from "@/lib/store";
 
 export function HomeView() {
   const db = useDb();
-  const router = useRouter();
   if (!db) return <Skeleton lines={5} />;
 
   const p = db.patient;
@@ -22,20 +20,29 @@ export function HomeView() {
   const since = db.documents.length ? Math.min(...db.documents.map((d) => Number(d.examDate.slice(0, 4)))) : null;
   const bpHigh = w.systolic >= 130 || w.diastolic >= 80;
   const spo2Low = w.spo2Min < 90;
+  const week = [...db.wearableDays].sort((a, b) => a.date.localeCompare(b.date)).slice(-7);
+  const series = (pick: (d: WearableDay) => number) => week.map(pick);
 
   return (
     <div>
       <h1 className="sr-only">Início</h1>
 
+      {/* Tablet: resumo do dia e ficha médica lado a lado */}
+      <div className="md:grid md:grid-cols-2 md:gap-4">
+      <TodaySummary alerts={alerts} />
+
       {/* Ficha médica: o que qualquer profissional precisa saber primeiro */}
-      <section aria-labelledby="ficha" className="card">
-        <p id="ficha" className="text-sm font-semibold text-ink-600">Ficha médica</p>
-        <p className="mt-0.5 font-serif text-[1.75rem] font-semibold leading-tight text-ink-900">{p.name}</p>
-        <p className="mt-0.5 text-[15px] text-ink-600">
-          {ageFrom(p.birthDate)} anos, {p.sex === "F" ? "feminino" : "masculino"}
-          {p.bloodType ? <>, sangue <strong className="text-ink-800">{p.bloodType}</strong></> : null}
-        </p>
-        <dl className="mt-3 space-y-2 border-t border-ink-100 pt-3 text-[15px]">
+      <section aria-labelledby="ficha" className="card mt-4 overflow-hidden p-0 md:mt-0">
+        {/* Capa do prontuário: o bloco escuro dá peso ao que identifica o paciente */}
+        <div className="bg-[radial-gradient(120%_140%_at_100%_0%,#2f7a63_0%,#174a3c_45%,#0b2720_100%)] px-4 pb-4 pt-3.5 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.15)]">
+          <p id="ficha" className="text-xs font-bold uppercase tracking-[0.1em] text-brand-200">Ficha médica</p>
+          <p className="mt-1 font-serif text-[1.75rem] font-semibold leading-tight">{p.name}</p>
+          <p className="mt-0.5 text-[15px] text-brand-100">
+            {ageFrom(p.birthDate)} anos, {p.sex === "F" ? "feminino" : "masculino"}
+            {p.bloodType ? <>, sangue <strong className="text-white">{p.bloodType}</strong></> : null}
+          </p>
+        </div>
+        <dl className="space-y-2 px-4 py-3.5 text-[15px]">
           <div className="flex gap-3">
             <dt className="w-28 shrink-0 font-semibold text-danger-700">Alergias</dt>
             <dd className="text-ink-800">{p.allergies.join(", ") || "Nenhuma conhecida"}</dd>
@@ -50,12 +57,14 @@ export function HomeView() {
           </div>
         </dl>
       </section>
+      </div>
 
-      <AiStatusBanner />
 
-      <SectionTitle>{alerts.length ? `Alertas (${alerts.length})` : "Alertas"}</SectionTitle>
+      <div id="alertas" className="scroll-mt-20">
+        <SectionTitle>{alerts.length ? `Alertas (${alerts.length})` : "Alertas"}</SectionTitle>
+      </div>
       {alerts.length ? (
-        <div className="space-y-3">
+        <div className="grid gap-3 md:grid-cols-2 md:items-start">
           {alerts.map((a) => <AlertCard key={a.id} alert={a} />)}
         </div>
       ) : (
@@ -63,11 +72,11 @@ export function HomeView() {
       )}
 
       <SectionTitle action={<SectionLink href="/wearables">Ver tudo</SectionLink>}>Últimos 7 dias</SectionTitle>
-      <div className="grid grid-cols-2 gap-3">
-        <Vital icon={<HeartIcon />} label="Batimentos em repouso" value={`${w.restingHr}`} unit="bpm" note="média" />
-        <Vital icon={<MoonIcon />} label="Sono" value={fmt(w.sleepHours)} unit="h/noite" note="média" />
-        <Vital icon={<DropIcon />} label="Saturação mínima" value={`${w.spo2Min}`} unit="%" note={spo2Low ? "abaixo de 90%" : "menor valor"} warn={spo2Low} />
-        <Vital icon={<GaugeIcon />} label="Pressão arterial" value={`${w.systolic}/${w.diastolic}`} unit="mmHg" note={bpHigh ? "acima de 130/80" : "média"} warn={bpHigh} />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Vital icon={<HeartIcon />} label="Batimentos em repouso" value={`${w.restingHr}`} unit="bpm" note="média" series={series((d) => d.restingHr)} />
+        <Vital icon={<MoonIcon />} label="Sono" value={fmt(w.sleepHours)} unit="h/noite" note="média" series={series((d) => d.sleepHours)} />
+        <Vital icon={<DropIcon />} label="Saturação mínima" value={`${w.spo2Min}`} unit="%" note={spo2Low ? "abaixo de 90%" : "menor valor"} warn={spo2Low} series={series((d) => d.spo2Min)} />
+        <Vital icon={<GaugeIcon />} label="Pressão arterial" value={`${w.systolic}/${w.diastolic}`} unit="mmHg" note={bpHigh ? "acima de 130/80" : "média"} warn={bpHigh} series={series((d) => d.systolic)} />
       </div>
 
       <SectionTitle action={<SectionLink href="/exames">Todos os exames</SectionLink>}>Exames alterados</SectionTitle>
@@ -99,42 +108,86 @@ export function HomeView() {
         {db.documents.length} laudos e {db.labResults.length} resultados guardados{since ? `, desde ${since}` : ""}.
       </p>
 
-      <Link href="/compartilhar" className="card mt-8 flex items-center gap-3 transition-colors hover:border-brand-300">
-        <ClipboardIcon width={28} className="shrink-0 text-brand-700" />
+      <Link
+        href="/compartilhar"
+        className="mt-8 flex items-center gap-3 rounded-[var(--radius-card)] bg-[linear-gradient(135deg,#2f7a63,#174a3c)] p-4 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.2),0_14px_30px_-12px_rgb(23_74_60/0.6)] transition-[box-shadow,translate] duration-200 hover:-translate-y-0.5"
+      >
+        <ClipboardIcon width={28} className="shrink-0 text-brand-200" />
         <span className="flex-1">
-          <span className="block text-[15px] font-semibold text-ink-900">Tem consulta marcada?</span>
-          <span className="block text-sm text-ink-600">Gere um relatório com seus exames e medições para mostrar ao médico.</span>
+          <span className="block font-serif text-lg font-semibold">Tem consulta marcada?</span>
+          <span className="block text-sm text-brand-100">Gere um relatório com seus exames e medições para mostrar ao médico.</span>
         </span>
-        <ChevronRight width={18} className="shrink-0 text-ink-400" />
+        <ChevronRight width={18} className="shrink-0 text-brand-200" />
       </Link>
-
-      <details className="mt-10 rounded-xl border border-dashed border-ink-300 px-4 text-[15px]">
-        <summary className="flex min-h-12 items-center font-semibold text-ink-600">Controles da demonstração</summary>
-        <div className="flex flex-col gap-2 pb-4">
-          <button className="btn-secondary w-full" onClick={() => simulateIrregularRhythm()}>
-            Simular batimentos irregulares no relógio
-          </button>
-          <button
-            className="btn-danger w-full"
-            onClick={async () => {
-              if (!confirm("Apagar os exames enviados e os acessos criados, e voltar aos dados iniciais?")) return;
-              await resetDemo();
-              router.push("/");
-            }}
-          >
-            Restaurar dados de demonstração
-          </button>
-        </div>
-      </details>
 
       <Disclaimer />
     </div>
   );
 }
 
-function Vital({ icon, label, value, unit, note, warn }: { icon: React.ReactNode; label: string; value: string; unit: string; note: string; warn?: boolean }) {
+const SHORT: Record<HealthAlert["kind"], string> = {
+  ritmo_irregular: "Ritmo irregular",
+  apneia: "Apneia do sono",
+  pressao: "Pressão",
+  fc_repouso: "Batimentos",
+  exames: "Exames",
+};
+
+/** Resumo do dia em uma frase: o que pede atenção, do mais ao menos urgente. */
+function TodaySummary({ alerts }: { alerts: HealthAlert[] }) {
+  const raw = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+  const today = raw.charAt(0).toUpperCase() + raw.slice(1);
+  const urgent = alerts.filter((a) => a.severity === "procure_medico").length;
+  const headline = !alerts.length
+    ? "Tudo em ordem hoje"
+    : urgent
+      ? `${urgent === 1 ? "1 ponto pede" : `${urgent} pontos pedem`} um médico`
+      : `${alerts.length === 1 ? "1 ponto pede" : `${alerts.length} pontos pedem`} atenção`;
   return (
-    <div className={`rounded-xl border bg-white p-4 ${warn ? "border-warn-300 border-l-4 border-l-warn-500" : "border-ink-200"}`}>
+    <section aria-labelledby="hoje" className="card md:h-full">
+      <p className="text-sm text-ink-500">{today}</p>
+      <p id="hoje" className="mt-0.5 flex items-center gap-2 font-serif text-[1.4rem] font-semibold leading-tight text-ink-900">
+        {!alerts.length && <CheckIcon width={20} className="text-brand-600" />}
+        {headline}
+      </p>
+      {alerts.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {alerts.map((a) => (
+            <a
+              key={a.id}
+              href="#alertas"
+              className={`inline-flex min-h-8 items-center gap-1 rounded-full px-3 text-sm font-semibold transition-colors ${
+                a.severity === "procure_medico" ? "bg-danger-100 text-danger-800 hover:bg-danger-200" : "bg-warn-100 text-warn-900 hover:bg-warn-200"
+              }`}
+            >
+              {SHORT[a.kind]}
+            </a>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** Minigráfico de 7 dias: só a tendência, sem eixos. */
+function Sparkline({ values, warn }: { values: number[]; warn?: boolean }) {
+  if (values.length < 2) return null;
+  const W = 100, H = 28, pad = 3;
+  const lo = Math.min(...values), hi = Math.max(...values);
+  const span = hi - lo || 1;
+  const pts = values.map((v, i) => [(i / (values.length - 1)) * W, H - pad - ((v - lo) / span) * (H - pad * 2)] as const);
+  const color = warn ? "var(--color-warn-600)" : "var(--color-brand-500)";
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="mt-2 h-7 w-full overflow-visible" aria-hidden>
+      <polyline points={pts.map((p) => p.join(",")).join(" ")} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+function Vital({ icon, label, value, unit, note, warn, series }: { icon: React.ReactNode; label: string; value: string; unit: string; note: string; warn?: boolean; series?: number[] }) {
+  return (
+    <div className={`card ${warn ? "bg-warn-50/75" : ""}`}>
       <p className="flex items-center gap-1.5 text-sm font-medium leading-tight text-ink-600">
         <span className="shrink-0 text-ink-500 [&>svg]:h-4 [&>svg]:w-4">{icon}</span>
         {label}
@@ -146,6 +199,7 @@ function Vital({ icon, label, value, unit, note, warn }: { icon: React.ReactNode
         {warn && <AlertIcon width={12} />}
         {note}
       </p>
+      {series && <Sparkline values={series} warn={warn} />}
     </div>
   );
 }

@@ -6,14 +6,14 @@ import { SectionTitle } from "@/components/ui";
 import { formatDateTime } from "@/lib/dates";
 import { shareState } from "@/lib/share";
 import { revokeShare, useDb } from "@/lib/store";
-import { SCOPE_LABELS } from "@/lib/types";
+import { RECIPIENTS, recipientText, SCOPE_LABELS } from "@/lib/types";
 
 export default function CompartilharPage() {
   return (
     <div>
-      <h1 className="page-title">Mostrar ao médico</h1>
+      <h1 className="page-title">Compartilhar histórico</h1>
       <p className="mb-5 mt-1 text-[15px] text-ink-600">
-        Como no open finance: você escolhe quem vê, o quê e por quanto tempo. O médico recebe um link com tudo organizado numa tela só.
+        Como no open finance: você escolhe quem vê (um médico, uma clínica ou um hospital), o quê e por quanto tempo. Quem recebe abre um link com tudo organizado numa tela só.
       </p>
       <ShareForm />
       <Shares />
@@ -35,7 +35,12 @@ function Shares() {
             <li key={s.token} className="card p-3">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-[15px] font-semibold">{s.doctorName}{s.doctorCrm ? ` · CRM ${s.doctorCrm}` : ""}</p>
+                  <p className="text-[15px] font-semibold">
+                    {recipientText(s, true)}
+                    {s.recipientKind && s.recipientKind !== "medico" && (
+                      <span className="ml-1.5 rounded-full bg-ink-900/[0.06] px-2 py-0.5 text-xs font-semibold text-ink-600">{RECIPIENTS[s.recipientKind].label}</span>
+                    )}
+                  </p>
                   <p className="text-xs text-ink-500">
                     Criado em {formatDateTime(s.createdAt)} · {st === "ativo" ? `válido até ${formatDateTime(s.expiresAt)}` : st === "revogado" ? `revogado em ${formatDateTime(s.revokedAt!)}` : "expirado"}
                   </p>

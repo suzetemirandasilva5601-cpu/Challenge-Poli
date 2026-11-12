@@ -3,6 +3,7 @@ import {
   ArrowDownIcon as PhArrowDown,
   ArrowLeftIcon as PhArrowLeft,
   ArrowUpIcon as PhArrowUp,
+  BuildingOfficeIcon as PhBuildingOffice,
   CameraIcon as PhCamera,
   CaretRightIcon as PhCaretRight,
   ChatCircleTextIcon as PhChat,
@@ -12,6 +13,7 @@ import {
   ClockCounterClockwiseIcon as PhClock,
   CopyIcon as PhCopy,
   DropIcon as PhDrop,
+  FirstAidIcon as PhFirstAid,
   FileTextIcon as PhFileText,
   GaugeIcon as PhGauge,
   GearSixIcon as PhGear,
@@ -67,6 +69,8 @@ export const GearIcon = wrap(PhGear);
 export const LabIcon = wrap(PhTestTube);
 export const FileIcon = wrap(PhFileText);
 export const StethoscopeIcon = wrap(PhStethoscope);
+export const ClinicIcon = wrap(PhBuildingOffice);
+export const HospitalIcon = wrap(PhFirstAid);
 export const PillIcon = wrap(PhPill);
 export const SyringeIcon = wrap(PhSyringe);
 export const ClipboardIcon = wrap(PhClipboardText);

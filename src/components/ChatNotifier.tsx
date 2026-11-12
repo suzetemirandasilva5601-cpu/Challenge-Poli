@@ -18,8 +18,10 @@ export function ChatNotifier() {
 
   useEffect(() => {
     if (!db) return;
-    const fresh = syncAlerts(db.patient.name.split(" ")[0], computeAlerts(db));
-    if (fresh.length) queueMicrotask(() => setToast({ alert: fresh[0], more: fresh.length - 1 }));
+    // Preferências: tipos de alerta desligados não viram mensagem nem aviso
+    const wanted = computeAlerts(db).filter((a) => db.prefs?.notify?.[a.kind] !== false);
+    const fresh = syncAlerts(db.patient.name.split(" ")[0], wanted);
+    if (fresh.length && db.prefs?.toast !== false) queueMicrotask(() => setToast({ alert: fresh[0], more: fresh.length - 1 }));
   }, [db]);
 
   useEffect(() => {
@@ -31,8 +33,8 @@ export function ChatNotifier() {
   if (!toast) return null;
   const { alert, more } = toast;
   return (
-    <div className="fixed inset-x-0 top-2 z-50 mx-auto max-w-md px-3" role="status" aria-live="polite">
-      <div className="toast-in flex items-start gap-2 rounded-2xl border border-ink-200 bg-white p-3 shadow-lg">
+    <div className="fixed inset-x-0 top-2 z-50 mx-auto max-w-md px-3 md:top-4" role="status" aria-live="polite">
+      <div className="toast-in glass flex items-start gap-2 rounded-2xl p-3 shadow-glass-hover">
         <Link href="/conversa" className="flex min-w-0 flex-1 gap-3" onClick={() => setToast(null)}>
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-paper">
             <LogoMark width={24} height={24} />

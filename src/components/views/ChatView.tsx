@@ -123,7 +123,7 @@ export function ChatView() {
   const messages = chat?.messages ?? [];
 
   return (
-    <div className="mx-auto flex h-dvh max-w-md flex-col" style={{ background: WALL }}>
+    <div className="mx-auto flex h-dvh max-w-md flex-col md:max-w-2xl" style={{ background: WALL }}>
       <header className="flex items-center gap-2 bg-brand-700 px-2 py-2 pt-[max(0.5rem,env(safe-area-inset-top))] text-white">
         <Link href="/" aria-label="Voltar para o início" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10">
           <BackIcon width={24} />

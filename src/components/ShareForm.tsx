@@ -6,16 +6,23 @@ import { useEffect, useState } from "react";
 import { buildDoctorLink } from "@/lib/doctor";
 import { absoluteUrl } from "@/lib/paths";
 import { createShare } from "@/lib/store";
-import { SCOPE_LABELS, SCOPES } from "@/lib/types";
+import { RECIPIENTS, SCOPE_LABELS, SCOPES, type RecipientKind } from "@/lib/types";
 import { useAiEnabled } from "./AiStatus";
-import { CheckIcon, ClipboardIcon, ShieldIcon } from "./icons";
+import { CheckIcon, ClinicIcon, ClipboardIcon, DoctorIcon, HospitalIcon, ShieldIcon } from "./icons";
 
 const DURATIONS = [
-  { hours: 1, label: "1 hora (durante a consulta)" },
+  { hours: 1, label: "1 hora" },
   { hours: 24, label: "24 horas" },
   { hours: 168, label: "7 dias" },
   { hours: 720, label: "30 dias" },
+  { hours: 2160, label: "90 dias" },
+  { hours: 8760, label: "1 ano" },
 ];
+
+const RECIPIENT_ICON = { medico: DoctorIcon, clinica: ClinicIcon, hospital: HospitalIcon } as const;
+
+/** Prazo sugerido: consulta avulsa com médico; acompanhamento com clínica ou hospital. */
+const DEFAULT_HOURS: Record<RecipientKind, number> = { medico: 24, clinica: 8760, hospital: 2160 };
 
 /** Limite prático de um QR code legível pela câmera do celular. */
 const QR_MAX_CHARS = 2300;
@@ -23,6 +30,8 @@ const QR_MAX_CHARS = 2300;
 export function ShareForm() {
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [kind, setKind] = useState<RecipientKind>("medico");
+  const r = RECIPIENTS[kind];
 
   if (token) return <ShareResult key={token} token={token} onDone={() => setToken(null)} />;
 
@@ -35,6 +44,7 @@ export function ShareForm() {
         const res = createShare({
           doctorName: String(f.get("doctorName") ?? ""),
           doctorCrm: String(f.get("doctorCrm") ?? ""),
+          recipientKind: kind,
           scopes: f.getAll("scopes").map(String),
           hours: Number(f.get("hours")),
         });
@@ -45,40 +55,88 @@ export function ShareForm() {
         }
       }}
     >
-      <div className="grid grid-cols-3 gap-2">
-        <label className="col-span-2 block">
-          <span className="label">Nome do médico</span>
-          <input name="doctorName" className="input" placeholder="Dra. Ana Ribeiro" required maxLength={100} />
+      <fieldset>
+        <legend className="label">Para quem</legend>
+        {/* Três opções grandes, com ícone: fáceis de tocar no celular */}
+        <div role="radiogroup" className="grid grid-cols-3 gap-2">
+          {(Object.keys(RECIPIENTS) as RecipientKind[]).map((k) => {
+            const Icon = RECIPIENT_ICON[k];
+            const on = kind === k;
+            return (
+              <button
+                key={k}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setKind(k)}
+                className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-2xl text-sm font-semibold transition-[background-color,box-shadow,color] duration-200 ${
+                  on ? "bg-brand-600 text-white shadow-[0_8px_20px_-10px_rgb(31_94_76/0.8)]" : "bg-ink-900/[0.04] text-ink-700 hover:bg-ink-900/[0.07]"
+                }`}
+              >
+                <Icon width={24} weight={on ? "fill" : "regular"} />
+                {RECIPIENTS[k].label}
+              </button>
+            );
+          })}
+        </div>
+        {kind !== "medico" && (
+          <p className="mt-2 text-sm leading-snug text-ink-600">
+            O acesso fica com a instituição: qualquer médico que te atender lá vê o mesmo histórico.
+          </p>
+        )}
+      </fieldset>
+
+      {/* Nome e registro empilhados no celular; lado a lado no tablet */}
+      <div className="grid gap-3 md:grid-cols-3">
+        <label className="block md:col-span-2">
+          <span className="label">{r.nameLabel}</span>
+          <input key={`n${kind}`} name="doctorName" className="input" placeholder={r.namePlaceholder} required maxLength={100} />
         </label>
         <label className="block">
-          <span className="label">CRM (opcional)</span>
-          <input name="doctorCrm" className="input" placeholder="123456/SP" maxLength={30} />
+          <span className="label">
+            {r.idLabel} <span className="font-normal text-ink-500">(opcional)</span>
+          </span>
+          <input key={`c${kind}`} name="doctorCrm" className="input" placeholder={r.idPlaceholder} maxLength={30} />
         </label>
       </div>
 
       <fieldset>
         <legend className="label">O que compartilhar</legend>
-        <div className="space-y-2">
+        {/* Lista única com marcação à direita, como nos ajustes do celular */}
+        <div className="well divide-y divide-ink-900/[0.06] overflow-hidden">
           {SCOPES.map((s) => (
-            <label key={s} className="flex min-h-11 items-center gap-3 rounded-lg border border-ink-200 px-3 text-[15px] has-[:checked]:border-brand-300 has-[:checked]:bg-brand-50/50">
-              <input type="checkbox" name="scopes" value={s} defaultChecked className="h-5 w-5 accent-brand-600" />
-              {SCOPE_LABELS[s]}
+            <label key={s} className="flex min-h-12 cursor-pointer items-center gap-3 px-3.5 text-[15px] text-ink-900">
+              <span className="flex-1">{SCOPE_LABELS[s]}</span>
+              <input type="checkbox" name="scopes" value={s} defaultChecked className="peer sr-only" />
+              <span
+                aria-hidden
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-transparent ring-1 ring-ink-900/15 transition-colors peer-checked:bg-brand-600 peer-checked:text-white peer-checked:ring-brand-600 peer-focus-visible:outline-2 peer-focus-visible:outline-brand-500"
+              >
+                <CheckIcon width={14} />
+              </span>
             </label>
           ))}
         </div>
       </fieldset>
 
-      <label className="block">
-        <span className="label">Por quanto tempo</span>
-        <select name="hours" className="input" defaultValue="24">
-          {DURATIONS.map((d) => <option key={d.hours} value={d.hours}>{d.label}</option>)}
-        </select>
-      </label>
+      <fieldset key={kind}>
+        <legend className="label">Por quanto tempo</legend>
+        <div className="flex flex-wrap gap-2">
+          {DURATIONS.map((d) => (
+            <label key={d.hours} className="cursor-pointer">
+              <input type="radio" name="hours" value={d.hours} defaultChecked={d.hours === DEFAULT_HOURS[kind]} className="peer sr-only" />
+              <span className="inline-flex min-h-10 items-center rounded-full bg-ink-900/[0.04] px-4 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-900/[0.07] peer-checked:bg-brand-600 peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-brand-500">
+                {d.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
-      <div className="flex gap-3 rounded-lg border border-brand-100 bg-brand-50 p-3 text-sm leading-relaxed text-ink-700">
+      <div className="flex gap-3 rounded-2xl bg-brand-50 p-3 text-sm leading-relaxed text-ink-700">
         <ShieldIcon className="h-5 w-5 shrink-0 text-brand-700" />
         <p>
-          Ao criar o acesso, você autoriza este médico a ver os dados marcados até o prazo escolhido, para fins de cuidado
+          Ao criar o acesso, você autoriza {kind === "medico" ? "este médico" : kind === "clinica" ? "esta clínica e os médicos dela" : "este hospital e os médicos dele"} a ver os dados marcados até o prazo escolhido, para fins de cuidado
           com a sua saúde (LGPD, art. 11). Você pode revogar quando quiser, e cada acesso fica registrado.
         </p>
       </div>
