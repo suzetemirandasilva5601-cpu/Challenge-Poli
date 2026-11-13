@@ -14,7 +14,7 @@ import { ChatIcon, DoctorIcon, HomeIcon, PlusIcon, VitalsIcon } from "./icons";
 const ITEMS = [
   { href: "/", label: "Início", icon: HomeIcon, match: (p: string) => p === "/" },
   { href: "/conversa", label: "Elo", icon: ChatIcon, match: (p: string) => p.startsWith("/conversa"), chat: true },
-  { href: "/enviar", label: "Exame", ariaLabel: "Adicionar exame (foto ou PDF)", icon: PlusIcon, match: (p: string) => p.startsWith("/enviar"), primary: true },
+  { href: "/enviar", label: "Enviar", ariaLabel: "Enviar exame (foto ou PDF)", icon: PlusIcon, match: (p: string) => p.startsWith("/enviar"), primary: true },
   { href: "/wearables", label: "Sinais", icon: VitalsIcon, match: (p: string) => p.startsWith("/wearables") },
   { href: "/compartilhar", label: "Médico", icon: DoctorIcon, match: (p: string) => p.startsWith("/compartilhar") },
 ];

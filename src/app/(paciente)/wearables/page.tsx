@@ -77,7 +77,7 @@ function Signals({ db }: { db: Db }) {
       </section>
 
       <p className="mt-6 text-sm text-ink-600">
-        Para enviar um exame em papel ou PDF, use o botão <Link href="/enviar" className="font-semibold text-brand-700 underline">Exame</Link>.
+        Para enviar um exame em papel ou PDF, use o botão <Link href="/enviar" className="font-semibold text-brand-700 underline">Enviar</Link>.
       </p>
       <Disclaimer />
     </div>
