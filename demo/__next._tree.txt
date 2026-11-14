@@ -1,5 +1,5 @@
-:HL["/Challenge-Poli/_next/static/chunks/2s8m0ug8r72se.css","style"]
-:HL["/Challenge-Poli/_next/static/media/b8dfa3d21eb22018-s.p.3lxpqujs87tck.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/Challenge-Poli/_next/static/chunks/03ymwdb1i834b.css","style"]
+:HL["/Challenge-Poli/_next/static/media/hanken_local-s.p.3241148m1u9do.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"demo","h":96,"c":"$Q2"}]]
-0:{"b":"DTN5_utqH4UC0ewrMVEK3","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"nXG24mmYSLhQJL7i1fZ9b","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
